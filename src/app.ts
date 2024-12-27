@@ -4,7 +4,6 @@ import toursRouter from './routes/tours'
 import usersRouter from './routes/users'
 
 declare module 'express-serve-static-core' {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface Request {
         requestTime?: string
     }
