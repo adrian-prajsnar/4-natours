@@ -4,8 +4,47 @@ import { ITour, Tour } from '../models/Tour'
 
 export async function getAllTours(req: Request, res: Response) {
     try {
-        const tours = await Tour.find()
+        console.log(req.query)
 
+        // BUILD QUERY
+        // 1.1) Filtering
+        const excludedFields: string[] = ['page', 'sort', 'limit', 'fields']
+        const queryObject = Object.fromEntries(
+            Object.entries({ ...req.query }).filter(
+                ([key]) => !excludedFields.includes(key)
+            )
+        )
+
+        // 1.2) Advanced Filtering
+        const queryString = JSON.stringify(queryObject).replace(
+            /\b(gte|gt|lte|lt)\b/g,
+            match => `$${match}`
+        )
+
+        const finalQueryObject = JSON.parse(queryString) as Record<
+            string,
+            unknown
+        >
+
+        console.log(finalQueryObject)
+
+        let query = Tour.find(finalQueryObject)
+
+        // 2) Sorting
+        if (req.query.sort) {
+            // sort ('price ratingsAverage')
+            const sortBy: string = (req.query.sort as string)
+                .split(',')
+                .join(' ')
+            query = query.sort(sortBy)
+        } else {
+            query = query.sort('-createdAt')
+        }
+
+        // EXECUTE QUERY
+        const tours = await query
+
+        // SEND RESPONSE
         res.status(200).json({
             status: 'success',
             results: tours.length,
