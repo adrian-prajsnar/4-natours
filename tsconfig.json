@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es2017",
         "module": "NodeNext",
-        "rootDir": "./src",
+        "rootDir": "./",
         "outDir": "./dist",
         "allowJs": true,
         "esModuleInterop": true,
@@ -11,6 +11,6 @@
         "skipLibCheck": true,
         "moduleResolution": "nodenext"
     },
-    "include": ["src/**/*.ts"],
+    "include": ["./**/*.ts"],
     "exclude": ["node_modules"]
 }
