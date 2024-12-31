@@ -4,8 +4,6 @@ import { ITour, Tour } from '../models/Tour'
 
 export async function getAllTours(req: Request, res: Response) {
     try {
-        console.log(req.query)
-
         // BUILD QUERY
         // 1.1) Filtering
         const excludedFields: string[] = ['page', 'sort', 'limit', 'fields']
@@ -25,8 +23,6 @@ export async function getAllTours(req: Request, res: Response) {
             string,
             unknown
         >
-
-        console.log(finalQueryObject)
 
         let query = Tour.find(finalQueryObject)
 
@@ -49,6 +45,19 @@ export async function getAllTours(req: Request, res: Response) {
             query = query.select(fields)
         } else {
             query = query.select('-__v')
+        }
+
+        // 4) Pagination
+        const page: number = Number(req.query.page) || 1
+        const limit: number = Number(req.query.limit) || 100
+        const skip: number = (page - 1) * limit
+
+        // page=2&limit=10, 1-10 page 1, 11-20 page 2, etc.
+        query = query.skip(skip).limit(limit)
+
+        if (req.query.page) {
+            const numTours: number = await Tour.countDocuments()
+            if (skip >= numTours) throw new Error('This page does not exist')
         }
 
         // EXECUTE QUERY
@@ -118,8 +127,6 @@ export async function updateTour(req: Request, res: Response) {
                 runValidators: true,
             }
         )
-
-        console.log(tour)
 
         res.status(200).json({
             status: 'success',
