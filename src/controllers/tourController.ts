@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { UpdateQuery } from 'mongoose'
+import { APIFeatures } from '../utils/apiFeatures'
 import { ITour, Tour } from '../models/Tour'
 
 export function aliasTopTours(
@@ -15,66 +16,17 @@ export function aliasTopTours(
 
 export async function getAllTours(req: Request, res: Response): Promise<void> {
     try {
-        // BUILD QUERY
-        // 1.1) Filtering
-        const excludedFields: string[] = ['page', 'sort', 'limit', 'fields']
-        const queryObject = Object.fromEntries(
-            Object.entries({ ...req.query }).filter(
-                ([key]) => !excludedFields.includes(key)
-            )
+        const features: APIFeatures<ITour> = new APIFeatures<ITour>(
+            Tour.find(),
+            req.query as Record<string, string>
         )
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate()
 
-        // 1.2) Advanced Filtering
-        const queryString = JSON.stringify(queryObject).replace(
-            /\b(gte|gt|lte|lt)\b/g,
-            match => `$${match}`
-        )
+        const tours: ITour[] = await features.query
 
-        const finalQueryObject = JSON.parse(queryString) as Record<
-            string,
-            unknown
-        >
-
-        let query = Tour.find(finalQueryObject)
-
-        // 2) Sorting
-        if (req.query.sort) {
-            // sort ('price ratingsAverage')
-            const sortBy: string = (req.query.sort as string)
-                .split(',')
-                .join(' ')
-            query = query.sort(sortBy)
-        } else {
-            query = query.sort('-createdAt')
-        }
-
-        // 3) Field limiting
-        if (req.query.fields) {
-            const fields: string = (req.query.fields as string)
-                .split(',')
-                .join(' ')
-            query = query.select(fields)
-        } else {
-            query = query.select('-__v')
-        }
-
-        // 4) Pagination
-        const page: number = Number(req.query.page) || 1
-        const limit: number = Number(req.query.limit) || 100
-        const skip: number = (page - 1) * limit
-
-        // page=2&limit=10, 1-10 page 1, 11-20 page 2, etc.
-        query = query.skip(skip).limit(limit)
-
-        if (req.query.page) {
-            const numTours: number = await Tour.countDocuments()
-            if (skip >= numTours) throw new Error('This page does not exist')
-        }
-
-        // EXECUTE QUERY
-        const tours = await query
-
-        // SEND RESPONSE
         res.status(200).json({
             status: 'success',
             results: tours.length,
