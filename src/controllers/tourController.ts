@@ -1,8 +1,19 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { UpdateQuery } from 'mongoose'
 import { ITour, Tour } from '../models/Tour'
 
-export async function getAllTours(req: Request, res: Response) {
+export function aliasTopTours(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void {
+    req.query.limit = '5'
+    req.query.sort = '-ratingsAverage,price'
+    req.query.fields = 'name, price, ratingsAverage, summary, difficulty'
+    next()
+}
+
+export async function getAllTours(req: Request, res: Response): Promise<void> {
     try {
         // BUILD QUERY
         // 1.1) Filtering
@@ -79,7 +90,7 @@ export async function getAllTours(req: Request, res: Response) {
     }
 }
 
-export async function getTour(req: Request, res: Response) {
+export async function getTour(req: Request, res: Response): Promise<void> {
     try {
         const tour = await Tour.findById(req.params.id)
 
@@ -97,7 +108,7 @@ export async function getTour(req: Request, res: Response) {
     }
 }
 
-export async function createTour(req: Request, res: Response) {
+export async function createTour(req: Request, res: Response): Promise<void> {
     try {
         const newTour = await Tour.create(req.body)
 
@@ -117,7 +128,7 @@ export async function createTour(req: Request, res: Response) {
     }
 }
 
-export async function updateTour(req: Request, res: Response) {
+export async function updateTour(req: Request, res: Response): Promise<void> {
     try {
         const tour = await Tour.findByIdAndUpdate(
             req.params.id,
@@ -142,7 +153,7 @@ export async function updateTour(req: Request, res: Response) {
     }
 }
 
-export async function deleteTour(req: Request, res: Response) {
+export async function deleteTour(req: Request, res: Response): Promise<void> {
     try {
         await Tour.findByIdAndDelete(req.params.id)
 
