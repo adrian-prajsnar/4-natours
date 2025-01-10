@@ -1,10 +1,10 @@
 import express, { Router } from 'express'
 import {
-  createUser,
-  deleteUser,
-  getAllUsers,
-  getUser,
-  updateUser,
+    createUser,
+    deleteUser,
+    getAllUsers,
+    getUser,
+    updateUser,
 } from '../controllers/userController'
 
 const usersRouter: Router = express.Router()
