@@ -1,8 +1,10 @@
+import slugify from 'slugify'
 import { model, Schema, Types } from 'mongoose'
 
 export interface ITour {
     _id: Types.ObjectId
     name: string
+    slug?: string
     duration: number
     maxGroupSize: number
     difficulty: 'easy' | 'medium' | 'difficult'
@@ -25,6 +27,10 @@ const tourSchema = new Schema<ITour>(
             required: [true, 'A tour must have a name'],
             unique: true,
             trim: true,
+        },
+        slug: {
+            type: String,
+            unique: true,
         },
         duration: {
             type: Number,
@@ -83,9 +89,16 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7
 })
 
+tourSchema.pre('save', function (next) {
+    this.slug = slugify(this.name, { lower: true })
+    next()
+})
+
 export const Tour = model<ITour>('Tour', tourSchema)
 
-export type ToursStats = {
+export type ToursStats = TourStat[]
+
+interface TourStat {
     _id: 'MEDIUM' | 'EASY' | 'DIFFICULT'
     numTours: number
     numRatings: number
@@ -93,10 +106,12 @@ export type ToursStats = {
     avgPrice: number
     minPrice: number
     maxPrice: number
-}[]
+}
 
-export type ToursMonthlyPlan = {
+export type ToursMonthlyPlan = ToursInMonth[]
+
+interface ToursInMonth {
+    monthNum: number
     numToursStartsInMonth: number
     tours: string[]
-    monthNum: number
-}[]
+}

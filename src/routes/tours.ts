@@ -12,7 +12,7 @@ import {
 
 const toursRouter: Router = express.Router()
 
-toursRouter.route('/tour-stats').get(getToursStats)
+toursRouter.route('/stats').get(getToursStats)
 toursRouter.route('/top-5-cheap').get(aliasTopTours, getAllTours)
 toursRouter.route('/monthly-plan/:year').get(getMonthlyPlan)
 toursRouter.route('/').get(getAllTours).post(createTour)
