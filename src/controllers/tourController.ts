@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { UpdateQuery } from 'mongoose'
 import { APIFeatures } from '../utils/apiFeatures'
-import { ITour, Tour } from '../models/Tour'
+import { ITour, Tour, ToursMonthlyPlan, ToursStats } from '../models/Tour'
 
 export function aliasTopTours(
     req: Request,
@@ -121,9 +121,9 @@ export async function deleteTour(req: Request, res: Response): Promise<void> {
     }
 }
 
-export async function getTourStats(req: Request, res: Response) {
+export async function getToursStats(req: Request, res: Response) {
     try {
-        const stats = await Tour.aggregate([
+        const stats: ToursStats = await Tour.aggregate([
             {
                 $match: {
                     ratingsAverage: { $gte: 4.5 },
@@ -145,17 +145,65 @@ export async function getTourStats(req: Request, res: Response) {
                     avgPrice: 1,
                 },
             },
-            // {
-            //     $match: {
-            //         _id: { $ne: 'EASY' },
-            //     },
-            // },
         ])
 
         res.status(200).json({
             status: 'success',
             data: {
                 stats,
+            },
+        })
+    } catch (error) {
+        res.status(404).json({
+            status: 'fail',
+            message: error,
+        })
+    }
+}
+
+export async function getMonthlyPlan(req: Request, res: Response) {
+    try {
+        const year = Number(req.params.year)
+        const plan: ToursMonthlyPlan = await Tour.aggregate([
+            {
+                $unwind: '$startDates',
+            },
+            {
+                $match: {
+                    startDates: {
+                        $gte: new Date(`${year.toString()}-01-01`),
+                        $lte: new Date(`${year.toString()}-12-31`),
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: { $month: '$startDates' },
+                    numToursStartsInMonth: { $sum: 1 },
+                    tours: { $push: '$name' },
+                },
+            },
+            {
+                $addFields: {
+                    monthNum: '$_id',
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                },
+            },
+            {
+                $sort: {
+                    numToursStartsInMonth: -1,
+                },
+            },
+        ])
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                plan,
             },
         })
     } catch (error) {

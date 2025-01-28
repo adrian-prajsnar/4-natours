@@ -74,3 +74,19 @@ const tourSchema = new Schema<ITour>({
 })
 
 export const Tour = model<ITour>('Tour', tourSchema)
+
+export type ToursStats = {
+    _id: 'MEDIUM' | 'EASY' | 'DIFFICULT'
+    numTours: number
+    numRatings: number
+    avgRating: number
+    avgPrice: number
+    minPrice: number
+    maxPrice: number
+}[]
+
+export type ToursMonthlyPlan = {
+    numToursStartsInMonth: number
+    tours: string[]
+    monthNum: number
+}[]
