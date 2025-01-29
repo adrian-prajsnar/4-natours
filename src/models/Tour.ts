@@ -1,5 +1,5 @@
 import slugify from 'slugify'
-import { model, Schema, Types } from 'mongoose'
+import { model, Query, Schema, Types } from 'mongoose'
 
 export interface ITour {
     _id: Types.ObjectId
@@ -18,6 +18,7 @@ export interface ITour {
     images?: string[]
     createdAt: Date
     startDates: Date[]
+    isSecretTour: boolean
 }
 
 const tourSchema = new Schema<ITour>(
@@ -78,6 +79,10 @@ const tourSchema = new Schema<ITour>(
             select: false,
         },
         startDates: [Date],
+        isSecretTour: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         toJSON: { virtuals: true },
@@ -93,6 +98,27 @@ tourSchema.pre('save', function (next) {
     this.slug = slugify(this.name, { lower: true })
     next()
 })
+
+tourSchema.pre(
+    /^find/,
+    function (this: Query<unknown, unknown> & { start: number }, next) {
+        this.find({
+            isSecretTour: { $ne: true },
+        })
+        this.start = Date.now()
+        next()
+    }
+)
+
+tourSchema.post(
+    /^find/,
+    function (this: Query<unknown, unknown> & { start: number }, docs, next) {
+        console.log(
+            `Query took ${(Date.now() - this.start).toString()} milliseconds!`
+        )
+        next()
+    }
+)
 
 export const Tour = model<ITour>('Tour', tourSchema)
 
