@@ -120,9 +120,14 @@ tourSchema.post(
     }
 )
 
-export const Tour = model<ITour>('Tour', tourSchema)
+tourSchema.pre('aggregate', function (next) {
+    this.pipeline().unshift({
+        $match: { isSecretTour: { $ne: true } },
+    })
+    next()
+})
 
-export type ToursStats = TourStat[]
+export const Tour = model<ITour>('Tour', tourSchema)
 
 interface TourStat {
     _id: 'MEDIUM' | 'EASY' | 'DIFFICULT'
@@ -134,10 +139,12 @@ interface TourStat {
     maxPrice: number
 }
 
-export type ToursMonthlyPlan = ToursInMonth[]
+export type ToursStats = TourStat[]
 
 interface ToursInMonth {
     monthNum: number
     numToursStartsInMonth: number
     tours: string[]
 }
+
+export type ToursMonthlyPlan = ToursInMonth[]
