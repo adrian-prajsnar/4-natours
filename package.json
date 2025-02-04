@@ -13,6 +13,7 @@
         "lint": "eslint src/**/*.ts",
         "lint:fix": "eslint src/**/*.ts --fix",
         "format": "prettier . --write",
+        "debug": "node --inspect -r ts-node/register src/server.ts",
         "import-dev-data": "ts-node dev-data/data/import-dev-data.ts --import",
         "delete-dev-data": "ts-node dev-data/data/import-dev-data.ts --delete"
     },
