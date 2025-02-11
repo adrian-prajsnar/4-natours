@@ -25,9 +25,32 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.use('/api/v1/tours', toursRouter)
 app.use('/api/v1/users', usersRouter)
 
-app.all('*', (req: Request, res: Response) => {
-    res.status(404).json({
-        statuss: 'fail',
-        message: `Can't find ${req.originalUrl} on this server!`,
-    })
+interface CustomError extends Error {
+    status?: string
+    statusCode?: number
+    message: string
+}
+
+app.all('*', (req: Request, _res: Response, next: NextFunction) => {
+    const err: CustomError = new Error(
+        `Can't find ${req.originalUrl} on this server!`
+    )
+    err.status = 'fail'
+    err.statusCode = 404
+
+    next(err)
 })
+
+app.use(
+    (err: CustomError, _req: Request, res: Response, next: NextFunction) => {
+        err.statusCode = err.statusCode ?? 500
+        err.status = err.status ?? 'error'
+
+        res.status(err.statusCode).json({
+            status: err.status,
+            message: err.message,
+        })
+
+        next()
+    }
+)
