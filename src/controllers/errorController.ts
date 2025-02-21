@@ -13,6 +13,12 @@ const handleCastErrorDb = (err: AppError) => {
   return new AppError(message, 400)
 }
 
+const handleDuplicateFieldsDb = (err: AppError) => {
+  const value = err.errorResponse?.errmsg?.match(/"([^"]+)"/)?.at(0)
+  const message = `Duplicated field value: ${value ?? 'unknown value'}. Please use another value!`
+  return new AppError(message, 400)
+}
+
 const sendErrorDev = ({
   err,
   res,
@@ -62,7 +68,10 @@ function globalErrorHandler(
     sendErrorDev({ err, res, status, statusCode })
   else if (process.env.NODE_ENV === 'production') {
     let error = { ...err }
+
     if (err.name === 'CastError') error = handleCastErrorDb(error)
+    if (err.code === 11000) error = handleDuplicateFieldsDb(error)
+
     sendErrorProd({ err: error, res, status, statusCode })
   }
 
