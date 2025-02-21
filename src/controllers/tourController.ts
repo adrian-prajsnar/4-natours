@@ -17,7 +17,7 @@ export const aliasTopTours = (
 }
 
 export const getAllTours = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     const features: APIFeatures<ITour> = new APIFeatures<ITour>(
       Tour.find(),
       req.query as Record<string, string>
@@ -36,8 +36,6 @@ export const getAllTours = catchAsync(
         tours,
       },
     })
-
-    next()
   }
 )
 
@@ -56,13 +54,11 @@ export const getTour = catchAsync(
         tour,
       },
     })
-
-    next()
   }
 )
 
 export const createTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     const newTour = await Tour.create(req.body)
 
     res.status(201).json({
@@ -71,8 +67,6 @@ export const createTour = catchAsync(
         tour: newTour,
       },
     })
-
-    next()
   }
 )
 
@@ -98,8 +92,6 @@ export const updateTour = catchAsync(
         tour,
       },
     })
-
-    next()
   }
 )
 
@@ -116,50 +108,44 @@ export const deleteTour = catchAsync(
       status: 'success',
       data: null,
     })
-
-    next()
   }
 )
 
-export const getToursStats = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const stats: ToursStats = await Tour.aggregate([
-      {
-        $match: {
-          ratingsAverage: { $gte: 4.5 },
-        },
+export const getToursStats = catchAsync(async (req: Request, res: Response) => {
+  const stats: ToursStats = await Tour.aggregate([
+    {
+      $match: {
+        ratingsAverage: { $gte: 4.5 },
       },
-      {
-        $group: {
-          _id: { $toUpper: `$difficulty` },
-          numTours: { $sum: 1 },
-          numRatings: { $sum: '$ratingsQuantity' },
-          avgRating: { $avg: '$ratingsAverage' },
-          avgPrice: { $avg: '$price' },
-          minPrice: { $min: '$price' },
-          maxPrice: { $max: '$price' },
-        },
+    },
+    {
+      $group: {
+        _id: { $toUpper: `$difficulty` },
+        numTours: { $sum: 1 },
+        numRatings: { $sum: '$ratingsQuantity' },
+        avgRating: { $avg: '$ratingsAverage' },
+        avgPrice: { $avg: '$price' },
+        minPrice: { $min: '$price' },
+        maxPrice: { $max: '$price' },
       },
-      {
-        $sort: {
-          avgPrice: 1,
-        },
+    },
+    {
+      $sort: {
+        avgPrice: 1,
       },
-    ])
+    },
+  ])
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        stats,
-      },
-    })
-
-    next()
-  }
-)
+  res.status(200).json({
+    status: 'success',
+    data: {
+      stats,
+    },
+  })
+})
 
 export const getMonthlyPlan = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const year = Number(req.params.year)
     const plan: ToursMonthlyPlan = await Tour.aggregate([
       {
@@ -203,7 +189,5 @@ export const getMonthlyPlan = catchAsync(
         plan,
       },
     })
-
-    next()
   }
 )

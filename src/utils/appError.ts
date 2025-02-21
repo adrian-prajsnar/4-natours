@@ -8,6 +8,16 @@ class AppError extends Error {
   errorResponse?: {
     errmsg?: string
   }
+  errors?: Record<
+    string,
+    {
+      message?: string
+      path?: string
+      value?: unknown
+      kind?: string
+      properties?: Record<string, unknown>
+    }
+  >
 
   constructor(message: string, statusCode: number) {
     super(message)

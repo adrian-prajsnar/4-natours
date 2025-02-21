@@ -19,6 +19,12 @@ const handleDuplicateFieldsDb = (err: AppError) => {
   return new AppError(message, 400)
 }
 
+const handleValidationErrorDb = (err: AppError) => {
+  const errors = Object.values(err.errors ?? {}).map(el => el.message)
+  const message = `Invalid input data. ${errors.join('. ')}`
+  return new AppError(message, 400)
+}
+
 const sendErrorDev = ({
   err,
   res,
@@ -55,24 +61,33 @@ const sendErrorProd = ({
   }
 }
 
+const getErrorStatus = (err: AppError) => ({
+  statusCode: err.statusCode || 500,
+  status: err.status || 'error',
+})
+
 function globalErrorHandler(
   err: AppError,
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const statusCode: number = err.statusCode || 500
-  const status: string = err.status || 'error'
+  const devErr = err
+  let prodErr = err
 
-  if (process.env.NODE_ENV === 'development')
-    sendErrorDev({ err, res, status, statusCode })
-  else if (process.env.NODE_ENV === 'production') {
-    let error = { ...err }
+  if (process.env.NODE_ENV === 'development') {
+    const { status, statusCode } = getErrorStatus(devErr)
+    sendErrorDev({ err: devErr, res, status, statusCode })
+  }
 
-    if (err.name === 'CastError') error = handleCastErrorDb(error)
-    if (err.code === 11000) error = handleDuplicateFieldsDb(error)
+  if (process.env.NODE_ENV === 'production') {
+    if (err.name === 'CastError') prodErr = handleCastErrorDb(prodErr)
+    if (err.code === 11000) prodErr = handleDuplicateFieldsDb(prodErr)
+    if (err.name === 'ValidationError')
+      prodErr = handleValidationErrorDb(prodErr)
 
-    sendErrorProd({ err: error, res, status, statusCode })
+    const { status, statusCode } = getErrorStatus(prodErr)
+    sendErrorProd({ err: prodErr, res, status, statusCode })
   }
 
   next()
