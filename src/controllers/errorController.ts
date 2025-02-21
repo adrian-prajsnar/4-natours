@@ -8,6 +8,11 @@ interface SendErrorOptions {
   statusCode: number
 }
 
+const handleCastErrorDb = (err: AppError) => {
+  const message = `Invalid ${err.path ?? 'unknown path'}: ${err.value ?? 'unknown value'}`
+  return new AppError(message, 400)
+}
+
 const sendErrorDev = ({
   err,
   res,
@@ -53,10 +58,13 @@ function globalErrorHandler(
   const statusCode: number = err.statusCode || 500
   const status: string = err.status || 'error'
 
-  const errorOptions: SendErrorOptions = { err, res, status, statusCode }
-
-  if (process.env.NODE_ENV === 'development') sendErrorDev(errorOptions)
-  else if (process.env.NODE_ENV === 'production') sendErrorProd(errorOptions)
+  if (process.env.NODE_ENV === 'development')
+    sendErrorDev({ err, res, status, statusCode })
+  else if (process.env.NODE_ENV === 'production') {
+    let error = { ...err }
+    if (err.name === 'CastError') error = handleCastErrorDb(error)
+    sendErrorProd({ err: error, res, status, statusCode })
+  }
 
   next()
 }

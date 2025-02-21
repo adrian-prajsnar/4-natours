@@ -2,6 +2,8 @@ class AppError extends Error {
   statusCode: number
   status: string
   isOperational: boolean
+  path?: string
+  value?: string
 
   constructor(message: string, statusCode: number) {
     super(message)
