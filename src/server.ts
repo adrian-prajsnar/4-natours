@@ -1,3 +1,9 @@
+process.on('uncaughtException', (err: Error) => {
+  console.error('UNHANDLED EXCEPTION! ❌ Shutting down...')
+  console.log(err)
+  process.exit(1)
+})
+
 import dotenv from 'dotenv'
 
 dotenv.config({
@@ -40,6 +46,7 @@ async function startServer() {
 void startServer()
 
 process.on('unhandledRejection', (err: Error) => {
-  console.error('UNHANDLED REJECTION! ❌ Shutting down...', err)
+  console.error('UNHANDLED REJECTION! ❌ Shutting down...')
+  console.log(err)
   server.close(() => process.exit(1))
 })
