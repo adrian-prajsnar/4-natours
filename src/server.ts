@@ -14,17 +14,32 @@ const dbConnectionString: string =
     process.env.DATABASE_PASSWORD ?? ''
   ) ?? ''
 
+let server: ReturnType<typeof app.listen>
+
+async function connectToDatabase() {
+  try {
+    await mongoose.connect(dbConnectionString)
+    console.log('✅ Database connection successful!')
+  } catch (error) {
+    console.error('❌ Database connection error:', error)
+    process.exit(1)
+  }
+}
+
 async function startServer() {
   try {
-    app.listen(port, () => {
-      console.log(`App running on port ${port}...`)
+    await connectToDatabase()
+    server = app.listen(port, () => {
+      console.log(`🚀 Server running on port ${port}...`)
     })
-
-    await mongoose.connect(dbConnectionString)
-    console.log('Database connection successful!')
   } catch (error) {
-    console.error('Error starting the server:', error)
+    console.error('❌ Error starting the server:', error)
   }
 }
 
 void startServer()
+
+process.on('unhandledRejection', (err: Error) => {
+  console.error('UNHANDLED REJECTION! ❌ Shutting down...', err)
+  server.close(() => process.exit(1))
+})
