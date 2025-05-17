@@ -1,5 +1,6 @@
-import validator from 'validator'
+import { isEmail } from 'validator'
 import { model, Schema, Types } from 'mongoose'
+import bcrypt from 'bcryptjs'
 
 export interface IUser {
   _id: Types.ObjectId
@@ -7,7 +8,7 @@ export interface IUser {
   email: string
   photo: string
   password: string
-  passwordConfirm: string
+  passwordConfirm?: string
 }
 
 const userSchema = new Schema<IUser>({
@@ -20,7 +21,7 @@ const userSchema = new Schema<IUser>({
     required: [true, 'Please provide your email'],
     unique: true,
     lowercase: true,
-    validate: [validator.isEmail, 'Please provide a valid email'],
+    validate: [isEmail, 'Please provide a valid email'],
   },
   photo: {
     type: String,
@@ -33,7 +34,24 @@ const userSchema = new Schema<IUser>({
   passwordConfirm: {
     type: String,
     required: [true, 'Please repeat your password'],
+    validate: {
+      // This only works on CREATE and SAVE!!! not on UPDATE!!!
+      validator: function (this: IUser, el: string) {
+        return el === this.password
+      },
+      message: 'Passwords are not the same!',
+    },
   },
+})
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    next()
+    return
+  }
+  this.password = await bcrypt.hash(this.password, 12)
+  this.passwordConfirm = undefined
+  next()
 })
 
 export const User = model<IUser>('User', userSchema)
