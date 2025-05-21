@@ -1,5 +1,5 @@
 import express, { Router } from 'express'
-import { signUp } from '../controllers/authController'
+import { login, signUp } from '../controllers/authController'
 import {
   createUser,
   deleteUser,
@@ -11,6 +11,7 @@ import {
 const usersRouter: Router = express.Router()
 
 usersRouter.post('/signup', signUp)
+usersRouter.post('/login', login)
 usersRouter.route('/').get(getAllUsers).post(createUser)
 usersRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
 

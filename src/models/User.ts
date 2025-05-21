@@ -1,14 +1,18 @@
 import { isEmail } from 'validator'
-import { model, Schema, Types } from 'mongoose'
+import { model, Schema } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
 export interface IUser {
-  _id: Types.ObjectId
+  _id: string
   name: string
   email: string
   photo: string
   password: string
   passwordConfirm?: string
+  correctPassword(
+    candidatePassword: string,
+    userPassword: string
+  ): Promise<boolean>
 }
 
 const userSchema = new Schema<IUser>({
@@ -30,6 +34,7 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [8, 'A password must have at least 8 characters'],
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -53,5 +58,12 @@ userSchema.pre('save', async function (next) {
   this.passwordConfirm = undefined
   next()
 })
+
+userSchema.methods.correctPassword = async function (
+  candidatePassword: string,
+  userPassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(candidatePassword, userPassword)
+}
 
 export const User = model<IUser>('User', userSchema)
