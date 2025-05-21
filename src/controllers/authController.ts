@@ -1,17 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
-import jwt, { SignOptions } from 'jsonwebtoken'
+import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken'
 import { IUser, User } from '../models/User'
+import { getEnv } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
 
 const signToken = (id: string) => {
-  const jwtSecret = process.env.JWT_SECRET
-  if (!jwtSecret) {
-    throw new Error('JWT_SECRET is not defined')
-  }
-
-  return jwt.sign({ id }, jwtSecret, {
-    expiresIn: process.env.JWT_EXPIRES_IN ?? '30d',
+  return jwt.sign({ id }, getEnv('JWT_SECRET'), {
+    expiresIn: getEnv('JWT_EXPIRATION_TIME'),
   } as SignOptions)
 }
 
@@ -25,6 +21,7 @@ export const signUp = catchAsync(
       email: req.body.email,
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
+      passwordChangedAt: req.body.passwordChangedAt,
     })
 
     const token = signToken(newUser._id)
@@ -62,5 +59,52 @@ export const login = catchAsync(
       status: 'success',
       token,
     })
+  }
+)
+
+export const protect = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    let token: string | undefined
+
+    if (req.headers.authorization?.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ').at(1)
+    }
+
+    if (!token) {
+      next(
+        new AppError('You are not logged in! Please log in to get access.', 401)
+      )
+      return
+    }
+
+    const decoded = jwt.verify(token, getEnv('JWT_SECRET')) as JwtPayload
+
+    const user = await User.findById(decoded.id)
+    if (!user) {
+      next(
+        new AppError(
+          'The user belonging to this token does no longer exist.',
+          401
+        )
+      )
+      return
+    }
+
+    if (!decoded.iat) {
+      throw new Error('Unexpected error: decoded.iat is undefined')
+    }
+
+    if (user.changedPasswordAfter(decoded.iat)) {
+      next(
+        new AppError(
+          'User recently changed password! Please log in again.',
+          401
+        )
+      )
+      return
+    }
+
+    req.user = user
+    next()
   }
 )

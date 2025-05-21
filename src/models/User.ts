@@ -9,10 +9,12 @@ export interface IUser {
   photo: string
   password: string
   passwordConfirm?: string
+  passwordChangedAt?: Date
   correctPassword(
     candidatePassword: string,
     userPassword: string
   ): Promise<boolean>
+  changedPasswordAfter(jwtTimestamp: number): boolean
 }
 
 const userSchema = new Schema<IUser>({
@@ -47,6 +49,7 @@ const userSchema = new Schema<IUser>({
       message: 'Passwords are not the same!',
     },
   },
+  passwordChangedAt: Date,
 })
 
 userSchema.pre('save', async function (next) {
@@ -64,6 +67,18 @@ userSchema.methods.correctPassword = async function (
   userPassword: string
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, userPassword)
+}
+
+userSchema.methods.changedPasswordAfter = function (
+  this: IUser,
+  jwtTimestamp: number
+): boolean {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = this.passwordChangedAt.getTime() / 1000
+    return jwtTimestamp < changedTimestamp
+  }
+
+  return false
 }
 
 export const User = model<IUser>('User', userSchema)
