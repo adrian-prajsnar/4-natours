@@ -1,20 +1,27 @@
-import { isEmail } from 'validator'
-import { model, Schema } from 'mongoose'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+import { model, Schema } from 'mongoose'
+import { isEmail } from 'validator'
+import { UserRole } from '../utils/enums'
+import { getEnv } from '../utils/helpers'
 
 export interface IUser {
   _id: string
   name: string
   email: string
   photo: string
+  role: UserRole
   password: string
   passwordConfirm?: string
   passwordChangedAt?: Date
+  passwordResetToken?: string
+  passwordResetExpires?: Date
   correctPassword(
     candidatePassword: string,
     userPassword: string
   ): Promise<boolean>
   changedPasswordAfter(jwtTimestamp: number): boolean
+  createPasswordResetToken(): string
 }
 
 const userSchema = new Schema<IUser>({
@@ -31,6 +38,11 @@ const userSchema = new Schema<IUser>({
   },
   photo: {
     type: String,
+  },
+  role: {
+    type: String,
+    enum: Object.values(UserRole),
+    default: UserRole.USER,
   },
   password: {
     type: String,
@@ -50,6 +62,8 @@ const userSchema = new Schema<IUser>({
     },
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 })
 
 userSchema.pre('save', async function (next) {
@@ -79,6 +93,24 @@ userSchema.methods.changedPasswordAfter = function (
   }
 
   return false
+}
+
+userSchema.methods.createPasswordResetToken = function (this: IUser) {
+  const resetToken = crypto.randomBytes(32).toString('hex')
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+
+  console.log('resetToken', resetToken)
+  console.log('this.passwordResetToken', this.passwordResetToken)
+
+  this.passwordResetExpires = new Date(
+    Date.now() +
+      Number(getEnv('PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES')) * 60 * 1000
+  )
+
+  return resetToken
 }
 
 export const User = model<IUser>('User', userSchema)

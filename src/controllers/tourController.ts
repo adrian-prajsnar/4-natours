@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { UpdateQuery } from 'mongoose'
-import { ITour, Tour, ToursMonthlyPlan, ToursStats } from '../models/Tour'
+import { ITour, Tour, ToursMonthlyPlan, ToursStats } from '../models/tourModel'
 import { APIFeatures } from '../utils/apiFeatures'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'

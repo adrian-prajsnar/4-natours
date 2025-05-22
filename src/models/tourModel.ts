@@ -1,5 +1,6 @@
 import slugify from 'slugify'
 import { model, Query, Schema, Types } from 'mongoose'
+import { TourDifficulty } from '../utils/enums'
 
 export interface ITour {
   _id: Types.ObjectId
@@ -7,7 +8,7 @@ export interface ITour {
   slug?: string
   duration: number
   maxGroupSize: number
-  difficulty: 'easy' | 'medium' | 'difficult'
+  difficulty: TourDifficulty
   ratingsAverage?: number
   ratingsQuantity?: number
   price: number
@@ -47,7 +48,7 @@ const tourSchema = new Schema<ITour>(
       type: String,
       required: [true, 'A tour must have a difficulty'],
       enum: {
-        values: ['easy', 'medium', 'difficult'],
+        values: Object.values(TourDifficulty),
         message: 'Difficulty is either: easy, medium, difficult',
       },
     },

@@ -1,8 +1,8 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
 import morgan from 'morgan'
 import AppError from './utils/appError'
-import toursRouter from './routes/tours'
-import usersRouter from './routes/users'
+import toursRouter from './routes/tourRotes'
+import usersRouter from './routes/userRoutes'
 import globalErrorHandler from './controllers/errorController'
 
 declare module 'express-serve-static-core' {

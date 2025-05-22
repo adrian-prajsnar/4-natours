@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { IUser, User } from '../models/User'
+import { IUser, User } from '../models/userModel'
 import catchAsync from '../utils/catchAsync'
 
 export const getAllUsers = catchAsync(
