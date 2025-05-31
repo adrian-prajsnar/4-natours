@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { NextFunction, Request, Response } from 'express'
 import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken'
 import { IUser, User } from '../models/userModel'
@@ -136,18 +137,15 @@ export const forgotPassword = catchAsync(
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    // 1) Get user based on POSTed email
     const user = await User.findOne({ email: req.body.email })
     if (!user) {
       next(new AppError('There is no user with that email address', 404))
       return
     }
 
-    // 2) Generate the random reset token
     const resetToken = user.createPasswordResetToken()
     await user.save({ validateBeforeSave: false })
 
-    // 3) Send it to user's email
     const host = req.get('host')
     if (!host) {
       throw new Error('Unexpected error: Host is not defined')
@@ -184,8 +182,37 @@ export const forgotPassword = catchAsync(
   }
 )
 
-// export const resetPassword = (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {}
+export const resetPassword = catchAsync(
+  async (
+    req: Request<{ token: string }, unknown, IUser>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex')
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    })
+
+    if (!user) {
+      next(new AppError('Token is invalid or has expired', 400))
+      return
+    }
+    user.password = req.body.password
+    user.passwordConfirm = req.body.passwordConfirm
+    user.passwordResetToken = undefined
+    user.passwordResetExpires = undefined
+    await user.save()
+
+    // Update changedPasswordAt using userSchema.pre save method
+
+    const token = signToken(user._id)
+    res.status(200).json({
+      status: 'success',
+      token,
+    })
+  }
+)

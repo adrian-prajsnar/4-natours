@@ -76,6 +76,15 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) {
+    next()
+    return
+  }
+  this.passwordChangedAt = new Date(Date.now() - 1000)
+  next()
+})
+
 userSchema.methods.correctPassword = async function (
   candidatePassword: string,
   userPassword: string
@@ -101,10 +110,6 @@ userSchema.methods.createPasswordResetToken = function (this: IUser) {
     .createHash('sha256')
     .update(resetToken)
     .digest('hex')
-
-  console.log('resetToken', resetToken)
-  console.log('this.passwordResetToken', this.passwordResetToken)
-
   this.passwordResetExpires = new Date(
     Date.now() +
       Number(getEnv('PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES')) * 60 * 1000
