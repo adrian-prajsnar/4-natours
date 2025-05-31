@@ -1,9 +1,11 @@
 import express, { Router } from 'express'
 import {
-  forgotPassword,
-  login,
-  resetPassword,
   signUp,
+  login,
+  forgotPassword,
+  resetPassword,
+  updatePassword,
+  protect,
 } from '../controllers/authController'
 import {
   createUser,
@@ -19,6 +21,7 @@ usersRouter.post('/signup', signUp)
 usersRouter.post('/login', login)
 usersRouter.post('/forgotPassword', forgotPassword)
 usersRouter.patch('/resetPassword/:token', resetPassword)
+usersRouter.patch('/updateMyPassword', protect, updatePassword)
 usersRouter.route('/').get(getAllUsers).post(createUser)
 usersRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
 

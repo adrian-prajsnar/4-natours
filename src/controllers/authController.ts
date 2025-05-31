@@ -1,6 +1,6 @@
 import crypto from 'crypto'
-import { NextFunction, Request, Response } from 'express'
 import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken'
+import { NextFunction, Request, Response } from 'express'
 import { IUser, User } from '../models/userModel'
 import { UserRole } from '../utils/enums'
 import { getEnv } from '../utils/helpers'
@@ -14,9 +14,29 @@ const signToken = (id: string) => {
   } as SignOptions)
 }
 
+const createSendToken = (user: IUser, statusCode: number, res: Response) => {
+  const token = signToken(user._id)
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  })
+}
+
 export const signUp = catchAsync(
   async (
-    req: Request<Record<string, never>, unknown, IUser>,
+    req: Request<
+      Record<string, never>,
+      unknown,
+      {
+        name: string
+        email: string
+        password: string
+        passwordConfirm: string
+      }
+    >,
     res: Response
   ): Promise<void> => {
     const newUser = await User.create({
@@ -26,21 +46,20 @@ export const signUp = catchAsync(
       passwordConfirm: req.body.passwordConfirm,
     })
 
-    const token = signToken(newUser._id)
-
-    res.status(201).json({
-      status: 'success',
-      token,
-      data: {
-        user: newUser,
-      },
-    })
+    createSendToken(newUser, 201, res)
   }
 )
 
 export const login = catchAsync(
   async (
-    req: Request<Record<string, never>, unknown, IUser>,
+    req: Request<
+      Record<string, never>,
+      unknown,
+      {
+        email: string
+        password: string
+      }
+    >,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -56,11 +75,7 @@ export const login = catchAsync(
       return
     }
 
-    const token = signToken(user._id)
-    res.status(200).json({
-      status: 'success',
-      token,
-    })
+    createSendToken(user, 200, res)
   }
 )
 
@@ -133,7 +148,13 @@ export const restrictTo = (...roles: UserRole[]) => {
 
 export const forgotPassword = catchAsync(
   async (
-    req: Request<Record<string, never>, unknown, IUser>,
+    req: Request<
+      Record<string, never>,
+      unknown,
+      {
+        email: string
+      }
+    >,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -184,7 +205,14 @@ export const forgotPassword = catchAsync(
 
 export const resetPassword = catchAsync(
   async (
-    req: Request<{ token: string }, unknown, IUser>,
+    req: Request<
+      { token: string },
+      unknown,
+      {
+        password: string
+        passwordConfirm: string
+      }
+    >,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -209,10 +237,50 @@ export const resetPassword = catchAsync(
 
     // Update changedPasswordAt using userSchema.pre save method
 
-    const token = signToken(user._id)
-    res.status(200).json({
-      status: 'success',
-      token,
-    })
+    createSendToken(user, 200, res)
+  }
+)
+
+export const updatePassword = catchAsync(
+  async (
+    req: Request<
+      Record<string, never>,
+      unknown,
+      {
+        currentPassword: string
+        newPassword: string
+        newPasswordConfirm: string
+      }
+    >,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const user = await User.findById(req.user?._id).select('+password')
+    if (!user) {
+      next(new AppError('User not found', 404))
+      return
+    }
+
+    if (
+      !(await user.correctPassword(req.body.currentPassword, user.password))
+    ) {
+      next(new AppError('Your current password is incorrect', 401))
+      return
+    }
+    if (req.body.newPassword !== req.body.newPasswordConfirm) {
+      next(
+        new AppError(
+          'New password and new password confirm are not the same',
+          400
+        )
+      )
+      return
+    }
+
+    user.password = req.body.newPassword
+    user.passwordConfirm = req.body.newPasswordConfirm
+    await user.save()
+
+    createSendToken(user, 200, res)
   }
 )
