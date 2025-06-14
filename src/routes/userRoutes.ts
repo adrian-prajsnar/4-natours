@@ -12,6 +12,7 @@ import {
   deleteUser,
   getAllUsers,
   getUser,
+  updateMe,
   updateUser,
 } from '../controllers/userController'
 
@@ -21,6 +22,7 @@ usersRouter.post('/signup', signUp)
 usersRouter.post('/login', login)
 usersRouter.post('/forgotPassword', forgotPassword)
 usersRouter.patch('/resetPassword/:token', resetPassword)
+usersRouter.patch('/updateMe', protect, updateMe)
 usersRouter.patch('/updateMyPassword', protect, updatePassword)
 usersRouter.route('/').get(getAllUsers).post(createUser)
 usersRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
