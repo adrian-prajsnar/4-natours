@@ -72,6 +72,17 @@ export const updateMe = catchAsync(
   }
 )
 
+export const deleteMe = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+    await User.findByIdAndUpdate(req.user?._id, { active: false })
+
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    })
+  }
+)
+
 export function getUser(req: Request, res: Response) {
   res.status(500).json({
     status: 'error',

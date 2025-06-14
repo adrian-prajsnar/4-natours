@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
-import { model, Schema } from 'mongoose'
+import { model, Schema, Query, Document } from 'mongoose'
 import { isEmail } from 'validator'
 import { UserRole } from '../utils/enums'
 import { getEnv } from '../utils/helpers'
@@ -22,6 +22,7 @@ export interface IUser {
   ): Promise<boolean>
   changedPasswordAfter(jwtTimestamp: number): boolean
   createPasswordResetToken(): string
+  active: boolean
 }
 
 const userSchema = new Schema<IUser>({
@@ -64,6 +65,11 @@ const userSchema = new Schema<IUser>({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 })
 
 userSchema.pre('save', async function (next) {
@@ -82,6 +88,11 @@ userSchema.pre('save', function (next) {
     return
   }
   this.passwordChangedAt = new Date(Date.now() - 1000)
+  next()
+})
+
+userSchema.pre(/^find/, function (this: Query<Document<IUser>, IUser>, next) {
+  this.find({ active: { $ne: false } })
   next()
 })
 
