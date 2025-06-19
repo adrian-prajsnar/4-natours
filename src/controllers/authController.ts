@@ -10,12 +10,21 @@ import sendEmail from '../utils/email'
 
 const signToken = (id: string) => {
   return jwt.sign({ id }, getEnv('JWT_SECRET'), {
-    expiresIn: getEnv('JWT_EXPIRATION_TIME'),
+    expiresIn: getEnv('JWT_EXPIRES_IN'),
   } as SignOptions)
 }
 
 const createSendToken = (user: IUser, statusCode: number, res: Response) => {
   const token = signToken(user._id)
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + Number(getEnv('JWT_COOKIE_EXPIRES_IN')) * 24 * 60 * 60 * 1000
+    ),
+    secure: getEnv('NODE_ENV') === 'production',
+    httpOnly: true,
+  }
+  user.password = undefined as unknown as string
+  res.cookie('jwt', token, cookieOptions)
   res.status(statusCode).json({
     status: 'success',
     token,
