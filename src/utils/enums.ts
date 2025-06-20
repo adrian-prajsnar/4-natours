@@ -10,3 +10,7 @@ export enum TourDifficulty {
   MEDIUM = 'medium',
   DIFFICULT = 'difficult',
 }
+
+export enum StartLocationType {
+  POINT = 'Point',
+}

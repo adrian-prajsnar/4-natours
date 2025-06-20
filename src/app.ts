@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import express, { Express, NextFunction, Request, Response } from 'express'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'

@@ -1,6 +1,6 @@
 import slugify from 'slugify'
 import { model, Query, Schema, Types } from 'mongoose'
-import { TourDifficulty } from '../utils/enums'
+import { StartLocationType, TourDifficulty } from '../utils/enums'
 
 export interface ITour {
   _id: Types.ObjectId
@@ -19,7 +19,17 @@ export interface ITour {
   images?: string[]
   createdAt: Date
   startDates: Date[]
-  isSecretTour: boolean
+  secretTour: boolean
+  startLocation: Location
+  locations: Location[]
+}
+
+interface Location {
+  type: StartLocationType
+  coordinates: number[]
+  address?: string
+  description?: string
+  day?: number
 }
 
 const tourSchema = new Schema<ITour>(
@@ -96,10 +106,38 @@ const tourSchema = new Schema<ITour>(
       select: false,
     },
     startDates: [Date],
-    isSecretTour: {
+    secretTour: {
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: StartLocationType.POINT,
+        enum: Object.values(StartLocationType),
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+      day: {
+        type: Number,
+        default: 1,
+      },
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: StartLocationType.POINT,
+          enum: Object.values(StartLocationType),
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -120,7 +158,7 @@ tourSchema.pre(
   /^find/,
   function (this: Query<unknown, unknown> & { start: number }, next) {
     this.find({
-      isSecretTour: { $ne: true },
+      secretTour: { $ne: true },
     })
     this.start = Date.now()
     next()
@@ -139,7 +177,7 @@ tourSchema.post(
 
 tourSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({
-    $match: { isSecretTour: { $ne: true } },
+    $match: { secretTour: { $ne: true } },
   })
   next()
 })

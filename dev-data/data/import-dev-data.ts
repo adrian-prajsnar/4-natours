@@ -26,7 +26,7 @@ async function connectToDb(): Promise<void> {
 
 void connectToDb()
 
-const tours: string = fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
+const tours: string = fs.readFileSync(`${__dirname}/tours.json`, 'utf-8')
 
 async function importData(): Promise<void> {
   try {
