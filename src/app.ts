@@ -8,6 +8,7 @@ import hpp from 'hpp'
 import AppError from './utils/appError'
 import toursRouter from './routes/tourRotes'
 import usersRouter from './routes/userRoutes'
+import reviewRouter from './routes/reviewRoutes'
 import globalErrorHandler from './controllers/errorController'
 
 declare module 'express-serve-static-core' {
@@ -112,6 +113,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 // 2) MOUNTING ROUTES
 app.use('/api/v1/tours', toursRouter)
 app.use('/api/v1/users', usersRouter)
+app.use('/api/v1/reviews', reviewRouter)
 
 app.all('*', (req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404))

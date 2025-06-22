@@ -1,4 +1,4 @@
-import { model, Schema, Types } from 'mongoose'
+import { model, Query, Schema, Types } from 'mongoose'
 import { ITour } from './tourModel'
 import { IUser } from './userModel'
 
@@ -42,5 +42,16 @@ const reviewSchema = new Schema<IReview>(
     toObject: { virtuals: true },
   }
 )
+
+reviewSchema.pre(/^find/, function (this: Query<IReview, IReview>, next) {
+  this.populate({
+    path: 'tour',
+    select: 'name',
+  }).populate({
+    path: 'user',
+    select: 'name photo',
+  })
+  next()
+})
 
 export const Review = model<IReview>('Review', reviewSchema)
