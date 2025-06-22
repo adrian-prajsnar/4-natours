@@ -1,5 +1,6 @@
 import slugify from 'slugify'
 import { model, Query, Schema, Types } from 'mongoose'
+import { IUser, User } from './userModel'
 import { StartLocationType, TourDifficulty } from '../utils/enums'
 
 export interface ITour {
@@ -20,17 +21,38 @@ export interface ITour {
   createdAt: Date
   startDates: Date[]
   secretTour: boolean
-  startLocation: Location
-  locations: Location[]
+  startLocation: ILocation
+  locations: ILocation[]
+  guides: IUser[]
 }
 
-interface Location {
+interface ILocation {
   type: StartLocationType
   coordinates: number[]
   address?: string
   description?: string
   day?: number
 }
+
+interface ITourStat {
+  _id: 'MEDIUM' | 'EASY' | 'DIFFICULT'
+  numTours: number
+  numRatings: number
+  avgRating: number
+  avgPrice: number
+  minPrice: number
+  maxPrice: number
+}
+
+export type ToursStats = ITourStat[]
+
+interface IToursInMonth {
+  monthNum: number
+  numToursStartsInMonth: number
+  tours: string[]
+}
+
+export type ToursMonthlyPlan = IToursInMonth[]
 
 const tourSchema = new Schema<ITour>(
   {
@@ -138,6 +160,7 @@ const tourSchema = new Schema<ITour>(
         day: Number,
       },
     ],
+    guides: Array,
   },
   {
     toJSON: { virtuals: true },
@@ -151,6 +174,12 @@ tourSchema.virtual('durationWeeks').get(function () {
 
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true })
+  next()
+})
+
+tourSchema.pre('save', async function (next) {
+  const guidesPromises = this.guides.map(async id => await User.findById(id))
+  this.guides = (await Promise.all(guidesPromises)) as IUser[]
   next()
 })
 
@@ -183,23 +212,3 @@ tourSchema.pre('aggregate', function (next) {
 })
 
 export const Tour = model<ITour>('Tour', tourSchema)
-
-interface TourStat {
-  _id: 'MEDIUM' | 'EASY' | 'DIFFICULT'
-  numTours: number
-  numRatings: number
-  avgRating: number
-  avgPrice: number
-  minPrice: number
-  maxPrice: number
-}
-
-export type ToursStats = TourStat[]
-
-interface ToursInMonth {
-  monthNum: number
-  numToursStartsInMonth: number
-  tours: string[]
-}
-
-export type ToursMonthlyPlan = ToursInMonth[]
