@@ -1,6 +1,6 @@
 import slugify from 'slugify'
 import { model, Query, Schema, Types } from 'mongoose'
-import { IUser, User } from './userModel'
+import { IUser } from './userModel'
 import { StartLocationType, TourDifficulty } from '../utils/enums'
 
 export interface ITour {
@@ -160,7 +160,7 @@ const tourSchema = new Schema<ITour>(
         day: Number,
       },
     ],
-    guides: Array,
+    guides: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   {
     toJSON: { virtuals: true },
@@ -174,12 +174,6 @@ tourSchema.virtual('durationWeeks').get(function () {
 
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true })
-  next()
-})
-
-tourSchema.pre('save', async function (next) {
-  const guidesPromises = this.guides.map(async id => await User.findById(id))
-  this.guides = (await Promise.all(guidesPromises)) as IUser[]
   next()
 })
 
