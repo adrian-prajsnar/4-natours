@@ -25,52 +25,58 @@ export interface IUser {
   active: boolean
 }
 
-const userSchema = new Schema<IUser>({
-  name: {
-    type: String,
-    required: [true, 'Please tell us your name!'],
-  },
-  email: {
-    type: String,
-    required: [true, 'Please provide your email'],
-    unique: true,
-    lowercase: true,
-    validate: [isEmail, 'Please provide a valid email'],
-  },
-  photo: {
-    type: String,
-  },
-  role: {
-    type: String,
-    enum: Object.values(UserRole),
-    default: UserRole.USER,
-  },
-  password: {
-    type: String,
-    required: [true, 'Please provide a password'],
-    minlength: [8, 'A password must have at least 8 characters'],
-    select: false,
-  },
-  passwordConfirm: {
-    type: String,
-    required: [true, 'Please repeat your password'],
-    validate: {
-      // This only works on CREATE and SAVE!!! not on UPDATE!!!
-      validator: function (this: IUser, el: string) {
-        return el === this.password
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Please tell us your name!'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Please provide your email'],
+      unique: true,
+      lowercase: true,
+      validate: [isEmail, 'Please provide a valid email'],
+    },
+    photo: {
+      type: String,
+    },
+    role: {
+      type: String,
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
+    },
+    password: {
+      type: String,
+      required: [true, 'Please provide a password'],
+      minlength: [8, 'A password must have at least 8 characters'],
+      select: false,
+    },
+    passwordConfirm: {
+      type: String,
+      required: [true, 'Please repeat your password'],
+      validate: {
+        // This only works on CREATE and SAVE!!! not on UPDATE!!!
+        validator: function (this: IUser, el: string) {
+          return el === this.password
+        },
+        message: 'Passwords are not the same!',
       },
-      message: 'Passwords are not the same!',
+    },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
     },
   },
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  active: {
-    type: Boolean,
-    default: true,
-    select: false,
-  },
-})
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+)
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {

@@ -35,7 +35,7 @@ interface ILocation {
 }
 
 interface ITourStat {
-  _id: 'MEDIUM' | 'EASY' | 'DIFFICULT'
+  _id: keyof typeof TourDifficulty
   numTours: number
   numRatings: number
   avgRating: number
