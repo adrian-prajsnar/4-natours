@@ -198,6 +198,14 @@ tourSchema.post(
   }
 )
 
+tourSchema.pre(/^find/, function (this: Query<ITour, ITour>, next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  })
+  next()
+})
+
 tourSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({
     $match: { secretTour: { $ne: true } },
