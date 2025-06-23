@@ -1,6 +1,7 @@
 import express, { Router } from 'express'
 import { UserRole } from '../utils/enums'
 import { protect, restrictTo } from '../controllers/authController'
+import { createReview } from '../controllers/reviewController'
 import {
   aliasTopTours,
   createTour,
@@ -23,5 +24,8 @@ toursRouter
   .get(getTour)
   .patch(updateTour)
   .delete(protect, restrictTo(UserRole.ADMIN, UserRole.LEAD_GUIDE), deleteTour)
+toursRouter
+  .route('/:tourId/reviews')
+  .post(protect, restrictTo(UserRole.USER), createReview)
 
 export default toursRouter
