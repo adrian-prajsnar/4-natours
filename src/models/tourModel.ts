@@ -2,6 +2,7 @@ import slugify from 'slugify'
 import { model, Query, Schema, Types } from 'mongoose'
 import { IUser } from './userModel'
 import { StartLocationType, TourDifficulty } from '../utils/enums'
+import { IReview } from './reviewModel'
 
 export interface ITour {
   _id: Types.ObjectId
@@ -24,6 +25,7 @@ export interface ITour {
   startLocation: ILocation
   locations: ILocation[]
   guides: IUser[]
+  reviews?: IReview[]
 }
 
 interface ILocation {
@@ -170,6 +172,12 @@ const tourSchema = new Schema<ITour>(
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7
+})
+
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
 })
 
 tourSchema.pre('save', function (next) {
