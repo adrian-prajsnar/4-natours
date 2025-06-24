@@ -3,7 +3,9 @@ import { createReview, getAllReviews } from '../controllers/reviewController'
 import { protect, restrictTo } from '../controllers/authController'
 import { UserRole } from '../utils/enums'
 
-const reviewRouter = express.Router()
+const reviewRouter = express.Router({
+  mergeParams: true,
+})
 
 reviewRouter
   .route('/')
