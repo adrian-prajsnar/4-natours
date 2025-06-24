@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { Review } from '../models/reviewModel'
+import { deleteOne } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
 
 export const getAllReviews = catchAsync(async (req: Request, res: Response) => {
@@ -40,3 +41,5 @@ export const createReview = catchAsync(
     })
   }
 )
+
+export const deleteReview = deleteOne(Review)

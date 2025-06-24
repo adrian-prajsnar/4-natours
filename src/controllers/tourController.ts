@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { UpdateQuery } from 'mongoose'
 import { ITour, Tour, ToursMonthlyPlan, ToursStats } from '../models/tourModel'
+import { deleteOne } from './handlerFactory'
 import { APIFeatures } from '../utils/apiFeatures'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
@@ -95,21 +96,7 @@ export const updateTour = catchAsync(
   }
 )
 
-export const deleteTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const tour = await Tour.findByIdAndDelete(req.params.id)
-
-    if (!tour) {
-      next(new AppError('No tour found with that ID', 404))
-      return
-    }
-
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    })
-  }
-)
+export const deleteTour = deleteOne(Tour)
 
 export const getToursStats = catchAsync(async (req: Request, res: Response) => {
   const stats: ToursStats = await Tour.aggregate([

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { IUser, User } from '../models/userModel'
+import { deleteOne } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
 
@@ -104,9 +105,4 @@ export function updateUser(req: Request, res: Response) {
   })
 }
 
-export function deleteUser(req: Request, res: Response) {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not implemented yet',
-  })
-}
+export const deleteUser = deleteOne(User)
