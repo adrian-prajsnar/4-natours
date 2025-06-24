@@ -3,7 +3,10 @@ import { Review } from '../models/reviewModel'
 import catchAsync from '../utils/catchAsync'
 
 export const getAllReviews = catchAsync(async (req: Request, res: Response) => {
-  const reviews = await Review.find()
+  let filter = {}
+  if (req.params.tourId) filter = { tour: req.params.tourId }
+
+  const reviews = await Review.find(filter)
   res.status(200).json({
     status: 'success',
     results: reviews.length,
