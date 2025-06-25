@@ -6,6 +6,7 @@ import {
   resetPassword,
   updatePassword,
   protect,
+  restrictTo,
 } from '../controllers/authController'
 import {
   createUser,
@@ -17,6 +18,7 @@ import {
   updateMe,
   updateUser,
 } from '../controllers/userController'
+import { UserRole } from '../utils/enums'
 
 const usersRouter: Router = express.Router()
 
@@ -24,10 +26,18 @@ usersRouter.post('/signup', signUp)
 usersRouter.post('/login', login)
 usersRouter.post('/forgotPassword', forgotPassword)
 usersRouter.patch('/resetPassword/:token', resetPassword)
-usersRouter.get('/me', protect, getMe, getUser)
-usersRouter.patch('/updateMe', protect, updateMe)
-usersRouter.delete('/deleteMe', protect, deleteMe)
-usersRouter.patch('/updateMyPassword', protect, updatePassword)
+
+// Protect all routes after this middleware
+usersRouter.use(protect)
+
+usersRouter.get('/me', getMe, getUser)
+usersRouter.patch('/updateMe', updateMe)
+usersRouter.delete('/deleteMe', deleteMe)
+usersRouter.patch('/updateMyPassword', updatePassword)
+
+// Restrict all routes after this middleware to ADMIN
+usersRouter.use(restrictTo(UserRole.ADMIN))
+
 usersRouter.route('/').get(getAllUsers).post(createUser)
 usersRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
 

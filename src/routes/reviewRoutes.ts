@@ -14,14 +14,16 @@ const reviewRouter = express.Router({
   mergeParams: true,
 })
 
+reviewRouter.use(protect)
+
 reviewRouter
   .route('/')
   .get(getAllReviews)
-  .post(protect, restrictTo(UserRole.USER), setTourUserIds, createReview)
+  .post(restrictTo(UserRole.USER), setTourUserIds, createReview)
 reviewRouter
   .route('/:id')
   .get(getReview)
-  .delete(deleteReview)
-  .patch(updateReview)
+  .delete(restrictTo(UserRole.USER, UserRole.ADMIN), deleteReview)
+  .patch(restrictTo(UserRole.USER, UserRole.ADMIN), updateReview)
 
 export default reviewRouter
