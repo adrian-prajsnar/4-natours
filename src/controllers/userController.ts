@@ -20,6 +20,11 @@ const filterObj = (
   return newObj
 }
 
+export const getMe = (req: Request, _res: Response, next: NextFunction) => {
+  req.params.id = req.user?._id ?? ''
+  next()
+}
+
 export const updateMe = catchAsync(
   async (
     req: Request<
