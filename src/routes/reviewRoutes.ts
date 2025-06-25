@@ -3,6 +3,7 @@ import {
   createReview,
   deleteReview,
   getAllReviews,
+  getReview,
   setTourUserIds,
   updateReview,
 } from '../controllers/reviewController'
@@ -17,6 +18,10 @@ reviewRouter
   .route('/')
   .get(getAllReviews)
   .post(protect, restrictTo(UserRole.USER), setTourUserIds, createReview)
-reviewRouter.route('/:id').delete(deleteReview).patch(updateReview)
+reviewRouter
+  .route('/:id')
+  .get(getReview)
+  .delete(deleteReview)
+  .patch(updateReview)
 
 export default reviewRouter

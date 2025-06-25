@@ -1,13 +1,23 @@
 import { NextFunction, Request, Response } from 'express'
-import { ITour, Tour, ToursMonthlyPlan, ToursStats } from '../models/tourModel'
-import { createOne, deleteOne, updateOne } from './handlerFactory'
-import { APIFeatures } from '../utils/apiFeatures'
+import { Tour, ToursMonthlyPlan, ToursStats } from '../models/tourModel'
+import {
+  createOne,
+  deleteOne,
+  getAll,
+  getOne,
+  updateOne,
+} from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
-import AppError from '../utils/appError'
+
+export const getAllTours = getAll(Tour)
+export const getTour = getOne(Tour, { path: 'reviews' })
+export const createTour = createOne(Tour)
+export const updateTour = updateOne(Tour)
+export const deleteTour = deleteOne(Tour)
 
 export const aliasTopTours = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   req.query.limit = '5'
@@ -15,51 +25,6 @@ export const aliasTopTours = (
   req.query.fields = 'name, price, ratingsAverage, summary, difficulty'
   next()
 }
-
-export const getAllTours = catchAsync(
-  async (req: Request, res: Response): Promise<void> => {
-    const features: APIFeatures<ITour> = new APIFeatures<ITour>(
-      Tour.find(),
-      req.query as Record<string, string>
-    )
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate()
-
-    const tours: ITour[] = await features.query
-
-    res.status(200).json({
-      status: 'success',
-      results: tours.length,
-      data: {
-        tours,
-      },
-    })
-  }
-)
-
-export const getTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const tour = await Tour.findById(req.params.id).populate('reviews')
-
-    if (!tour) {
-      next(new AppError('No tour found with that ID', 404))
-      return
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    })
-  }
-)
-
-export const createTour = createOne(Tour)
-export const updateTour = updateOne(Tour)
-export const deleteTour = deleteOne(Tour)
 
 export const getToursStats = catchAsync(async (req: Request, res: Response) => {
   const stats: ToursStats = await Tour.aggregate([

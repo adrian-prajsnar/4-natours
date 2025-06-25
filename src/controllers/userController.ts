@@ -1,8 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
-import { IUser, User } from '../models/userModel'
-import { deleteOne, updateOne } from './handlerFactory'
+import { User } from '../models/userModel'
+import { deleteOne, getAll, getOne, updateOne } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
+
+export const getAllUsers = getAll(User)
+export const getUser = getOne(User)
+export const updateUser = updateOne(User)
+export const deleteUser = deleteOne(User)
 
 const filterObj = (
   obj: Record<string, unknown>,
@@ -14,20 +19,6 @@ const filterObj = (
   })
   return newObj
 }
-
-export const getAllUsers = catchAsync(
-  async (req: Request, res: Response): Promise<void> => {
-    const users: IUser[] = await User.find()
-
-    res.status(200).json({
-      status: 'success',
-      results: users.length,
-      data: {
-        users,
-      },
-    })
-  }
-)
 
 export const updateMe = catchAsync(
   async (
@@ -84,20 +75,9 @@ export const deleteMe = catchAsync(
   }
 )
 
-export function getUser(req: Request, res: Response) {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not implemented yet',
-  })
-}
-
 export function createUser(req: Request, res: Response) {
   res.status(500).json({
     status: 'error',
-    message: 'This route is not implemented yet',
+    message: 'This route is not defined! Please use /signup instead',
   })
 }
-
-// Do NOT update password with this!
-export const updateUser = updateOne(User)
-export const deleteUser = deleteOne(User)
