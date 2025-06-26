@@ -1,5 +1,5 @@
-import { model, Query, Schema, Types } from 'mongoose'
-import { ITour } from './tourModel'
+import { model, Query, Schema, Types, Model } from 'mongoose'
+import { ITour, Tour } from './tourModel'
 import { IUser } from './userModel'
 
 export interface IReview {
@@ -11,7 +11,11 @@ export interface IReview {
   user: IUser
 }
 
-const reviewSchema = new Schema<IReview>(
+interface IReviewModel extends Model<IReview> {
+  calcAverageRatings(tourId: string): Promise<void>
+}
+
+const reviewSchema = new Schema<IReview, IReviewModel>(
   {
     review: {
       type: String,
@@ -51,4 +55,36 @@ reviewSchema.pre(/^find/, function (this: Query<IReview, IReview>, next) {
   next()
 })
 
-export const Review = model<IReview>('Review', reviewSchema)
+reviewSchema.statics.calcAverageRatings = async function (tourId: string) {
+  interface IStats {
+    _id: string
+    numRatings: number
+    avgRating: number
+  }
+
+  const stats: IStats[] = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour',
+        numRatings: { $sum: 1 },
+        avgRating: { $avg: '$rating' },
+      },
+    },
+  ])
+
+  await Tour.findByIdAndUpdate(tourId, {
+    ratingsQuantity: stats[0].numRatings,
+    ratingsAverage: stats[0].avgRating,
+  })
+}
+
+reviewSchema.post('save', async function () {
+  await (this.constructor as IReviewModel).calcAverageRatings(
+    this.tour as unknown as string
+  )
+})
+
+export const Review = model<IReview, IReviewModel>('Review', reviewSchema)
