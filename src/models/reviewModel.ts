@@ -76,8 +76,8 @@ reviewSchema.statics.calcAverageRatings = async function (tourId: string) {
   ])
 
   await Tour.findByIdAndUpdate(tourId, {
-    ratingsQuantity: stats[0].numRatings,
-    ratingsAverage: stats[0].avgRating,
+    ratingsQuantity: stats[0]?.numRatings || 0,
+    ratingsAverage: stats[0]?.avgRating || 4.5,
   })
 }
 
@@ -86,5 +86,29 @@ reviewSchema.post('save', async function () {
     this.tour as unknown as string
   )
 })
+
+reviewSchema.pre(
+  /^findOneAnd/,
+  async function (this: Query<IReview, IReview> & { r?: IReview }, next) {
+    const doc = await Review.findOne(this.getQuery())
+    if (!doc) {
+      next()
+      return
+    }
+    this.r = doc
+    next()
+  }
+)
+
+reviewSchema.post(
+  /^findOneAnd/,
+  async function (this: Query<IReview, IReview> & { r?: IReview }) {
+    if (this.r) {
+      await (this.r.constructor as IReviewModel).calcAverageRatings(
+        this.r.tour as unknown as string
+      )
+    }
+  }
+)
 
 export const Review = model<IReview, IReviewModel>('Review', reviewSchema)
