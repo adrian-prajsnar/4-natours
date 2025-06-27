@@ -47,6 +47,8 @@ const reviewSchema = new Schema<IReview, IReviewModel>(
   }
 )
 
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true })
+
 reviewSchema.pre(/^find/, function (this: Query<IReview, IReview>, next) {
   this.populate({
     path: 'user',
