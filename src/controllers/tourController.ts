@@ -8,6 +8,7 @@ import {
   updateOne,
 } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
+import AppError from '../utils/appError'
 
 export const getAllTours = getAll(Tour)
 export const getTour = getOne(Tour, { path: 'reviews' })
@@ -102,6 +103,39 @@ export const getMonthlyPlan = catchAsync(
       status: 'success',
       data: {
         plan,
+      },
+    })
+  }
+)
+
+export const getToursWithin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { distance, latlng, unit } = req.params
+    const [lat, lng] = latlng.split(',').map(Number)
+
+    if (!lat || !lng || !distance || !unit) {
+      next(
+        new AppError(
+          'Please provide latitude, longitude, distance and unit in format /tours-within/:distance/center/:lat,lng/unit/:unit',
+          400
+        )
+      )
+    }
+
+    const radius =
+      unit === 'mi' ? Number(distance) / 3963.2 : Number(distance) / 6378.1
+
+    const tours = await Tour.find({
+      startLocation: {
+        $geoWithin: { $centerSphere: [[lng, lat], radius] },
+      },
+    })
+
+    res.status(200).json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        tours,
       },
     })
   }

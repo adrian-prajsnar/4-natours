@@ -9,6 +9,7 @@ import {
   getMonthlyPlan,
   getTour,
   getToursStats,
+  getToursWithin,
   updateTour,
 } from '../controllers/tourController'
 import reviewRouter from './reviewRoutes'
@@ -25,6 +26,9 @@ toursRouter
     restrictTo(UserRole.ADMIN, UserRole.LEAD_GUIDE, UserRole.GUIDE),
     getMonthlyPlan
   )
+toursRouter
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(getToursWithin)
 toursRouter
   .route('/')
   .get(getAllTours)
