@@ -219,9 +219,15 @@ tourSchema.pre(/^find/, function (this: Query<ITour, ITour>, next) {
 })
 
 tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({
-    $match: { secretTour: { $ne: true } },
-  })
+  const pipeline = this.pipeline()
+  const firstStage = pipeline[0]
+
+  if (!('$geoNear' in firstStage)) {
+    pipeline.unshift({
+      $match: { secretTour: { $ne: true } },
+    })
+  }
+
   next()
 })
 

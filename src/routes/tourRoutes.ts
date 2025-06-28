@@ -6,6 +6,7 @@ import {
   createTour,
   deleteTour,
   getAllTours,
+  getDistances,
   getMonthlyPlan,
   getTour,
   getToursStats,
@@ -29,6 +30,7 @@ toursRouter
 toursRouter
   .route('/tours-within/:distance/center/:latlng/unit/:unit')
   .get(getToursWithin)
+toursRouter.route('/distances/:latlng/unit/:unit').get(getDistances)
 toursRouter
   .route('/')
   .get(getAllTours)
