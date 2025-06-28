@@ -1,4 +1,5 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
+import path from 'path'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
@@ -19,7 +20,13 @@ declare module 'express-serve-static-core' {
 
 export const app: Express = express()
 
+app.set('view engine', 'pug')
+app.set('views', path.join(__dirname, 'views'))
+
 // 1) GLOBAL MIDDLEWARES
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')))
+
 // Set security HTTP headers
 app.use(helmet())
 
@@ -100,9 +107,6 @@ app.use(
   })
 )
 
-// Serving static files
-app.use(express.static(`${__dirname}/public`))
-
 // Test middleware
 app.use((req: Request, _res: Response, next: NextFunction) => {
   req.requestTime = new Date().toISOString()
@@ -111,6 +115,10 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 })
 
 // 2) MOUNTING ROUTES
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).render('base')
+})
+
 app.use('/api/v1/tours', toursRouter)
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/reviews', reviewRouter)
