@@ -25,7 +25,7 @@ app.set('views', path.join(__dirname, 'views'))
 
 // 1) GLOBAL MIDDLEWARES
 // Serving static files
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, '..', 'public')))
 
 // Set security HTTP headers
 app.use(helmet())
@@ -116,7 +116,10 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
 // 2) MOUNTING ROUTES
 app.get('/', (_req: Request, res: Response) => {
-  res.status(200).render('base')
+  res.status(200).render('base', {
+    tour: 'The Forest Hiker',
+    user: 'Jonas',
+  })
 })
 
 app.use('/api/v1/tours', toursRouter)
