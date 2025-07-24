@@ -7,9 +7,10 @@ import mongoSanitize from 'express-mongo-sanitize'
 import sanitizeHtml from 'sanitize-html'
 import hpp from 'hpp'
 import AppError from './utils/appError'
+import viewsRouter from './routes/viewRoutes'
 import toursRouter from './routes/tourRoutes'
 import usersRouter from './routes/userRoutes'
-import reviewRouter from './routes/reviewRoutes'
+import reviewsRouter from './routes/reviewRoutes'
 import globalErrorHandler from './controllers/errorController'
 
 declare module 'express-serve-static-core' {
@@ -111,21 +112,11 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 })
 
 // 2) MOUNTING ROUTES
-app.get('/', (_req: Request, res: Response) => {
-  res
-    .status(200)
-    .render('base', { tour: 'The Forest Hiker', user: 'Jonas', title: 'Home' })
-})
-app.get('/overview', (_req: Request, res: Response) => {
-  res.status(200).render('overview', { title: 'All Tours' })
-})
-app.get('/tour', (_req: Request, res: Response) => {
-  res.status(200).render('tour', { title: 'The Forest Hiker Tour' })
-})
 
+app.use('/', viewsRouter)
 app.use('/api/v1/tours', toursRouter)
 app.use('/api/v1/users', usersRouter)
-app.use('/api/v1/reviews', reviewRouter)
+app.use('/api/v1/reviews', reviewsRouter)
 
 app.all('*', (req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404))
