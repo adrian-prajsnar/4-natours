@@ -3,5 +3,9 @@
   "tabWidth": 2,
   "semi": false,
   "singleQuote": true,
-  "arrowParens": "avoid"
+  "arrowParens": "avoid",
+  "plugins": ["@prettier/plugin-pug"],
+  "overrides": [
+    { "files": "*.pug", "options": { "parser": "pug", "tabWidth": 2 } }
+  ]
 }
