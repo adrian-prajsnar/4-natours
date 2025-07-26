@@ -1,18 +1,29 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
 import catchAsync from '../utils/catchAsync'
+import AppError from '../utils/appError'
+import { UserRole } from '../utils/enums'
 
 export const getOverview = catchAsync(async (_req: Request, res: Response) => {
-  // 1) Get tour data from collection
   const tours = await Tour.find()
-
-  // 2) Build template
-
-  // 3) Render that template using tour data from 1)
-
   res.status(200).render('overview', { title: 'All Tours', tours })
 })
 
-export const getTour = (_req: Request, res: Response) => {
-  res.status(200).render('tour', { title: 'The Forest Hiker Tour' })
-}
+export const getTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const roles = UserRole
+    const tour = await Tour.findOne({
+      slug: req.params.slug,
+    }).populate({
+      path: 'reviews',
+      select: 'review rating user',
+    })
+
+    if (!tour) {
+      next(new AppError(`No tour found with that slug`, 404))
+      return
+    }
+
+    res.status(200).render('tour', { title: tour.name, tour, roles })
+  }
+)
