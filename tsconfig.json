@@ -17,6 +17,7 @@
     },
     "include": [
         "./**/*.ts",
+        "./public/js/**/*.js"
     ],
     "exclude": [
         "node_modules"

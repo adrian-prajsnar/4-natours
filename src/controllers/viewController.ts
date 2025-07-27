@@ -24,6 +24,6 @@ export const getTour = catchAsync(
       return
     }
 
-    res.status(200).render('tour', { title: tour.name, tour, roles })
+    res.status(200).render('tour', { title: `${tour.name} Tour`, tour, roles })
   }
 )
