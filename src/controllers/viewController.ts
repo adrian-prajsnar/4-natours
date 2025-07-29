@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
 import { UserRole } from '../utils/enums'
+import { PROJECT_URL } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
 
@@ -29,5 +30,8 @@ export const getTour = catchAsync(
 )
 
 export const getLoginForm = (_req: Request, res: Response) => {
-  res.status(200).render('login', { title: 'Log into your account' })
+  res.status(200).render('login', {
+    title: 'Log into your account',
+    PROJECT_URL,
+  })
 }

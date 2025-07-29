@@ -4,3 +4,8 @@ export function getEnv(key: string): string {
   }
   return process.env[key]
 }
+
+export const PROJECT_URL: string =
+  getEnv('NODE_ENV') === 'development'
+    ? `http://localhost:${getEnv('SERVER_PORT')}`
+    : getEnv('PROJECT_URL')

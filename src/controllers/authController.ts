@@ -94,6 +94,8 @@ export const protect = catchAsync(
 
     if (req.headers.authorization?.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ').at(1)
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt as string
     }
 
     if (!token) {

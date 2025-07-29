@@ -1,7 +1,11 @@
 extends base
 
+block append head
+  script(src='https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js')
+  script(defer, src='/js/login.js')
+
 block content
-  main.main
+  main.main(data-url=`${PROJECT_URL}`)
     .login-form
       h2.heading-secondary.ma-bt-lg Log into your account
       form.form

@@ -6,6 +6,7 @@ import helmet from 'helmet'
 import mongoSanitize from 'express-mongo-sanitize'
 import sanitizeHtml from 'sanitize-html'
 import hpp from 'hpp'
+import cookieParser from 'cookie-parser'
 import AppError from './utils/appError'
 import viewsRouter from './routes/viewRoutes'
 import toursRouter from './routes/tourRoutes'
@@ -34,7 +35,11 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", 'https://api.mapbox.com'],
+        scriptSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://cdn.jsdelivr.net',
+        ],
         workerSrc: ["'self'", 'blob:'],
         styleSrc: [
           "'self'",
@@ -69,6 +74,7 @@ app.use('/api', limiter)
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }))
+app.use(cookieParser())
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize())
@@ -131,6 +137,7 @@ app.use(
 app.use((req: Request, _res: Response, next: NextFunction) => {
   req.requestTime = new Date().toISOString()
   // console.log(req.headers)
+  console.log(req.cookies)
   next()
 })
 

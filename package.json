@@ -21,6 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@prettier/plugin-pug": "^3.4.0",
+    "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.0",
     "@types/hpp": "^0.2.6",
     "@types/jsonwebtoken": "^9.0.9",
