@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
+import { UserRole } from '../utils/enums'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
-import { UserRole } from '../utils/enums'
 
 export const getOverview = catchAsync(async (_req: Request, res: Response) => {
   const tours = await Tour.find()
@@ -27,3 +27,7 @@ export const getTour = catchAsync(
     res.status(200).render('tour', { title: `${tour.name} Tour`, tour, roles })
   }
 )
+
+export const getLoginForm = (_req: Request, res: Response) => {
+  res.status(200).render('login', { title: 'Log into your account' })
+}
