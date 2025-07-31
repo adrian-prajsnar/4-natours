@@ -137,6 +137,37 @@ export const protect = catchAsync(
   }
 )
 
+// Only for rendered pages, no errors!
+export const isLoggedIn = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (req.cookies.jwt) {
+      const decoded = jwt.verify(
+        req.cookies.jwt as string,
+        getEnv('JWT_SECRET')
+      ) as JwtPayload
+
+      const user = await User.findById(decoded.id)
+      if (!user) {
+        next()
+        return
+      }
+
+      if (!decoded.iat) {
+        throw new Error('Unexpected error: decoded.iat is undefined')
+      }
+
+      if (user.changedPasswordAfter(decoded.iat)) {
+        next()
+        return
+      }
+
+      res.locals.user = user
+    }
+
+    next()
+  }
+)
+
 export const restrictTo = (...roles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const userRole = req.user?.role

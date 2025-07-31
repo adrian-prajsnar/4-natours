@@ -1,9 +1,7 @@
 const login = async (email, password) => {
-  console.log('data:', email, password)
   try {
     const baseURL = document.querySelector('main').dataset.url
     const url = `${baseURL}/api/v1/users/login`
-    console.log('url:', url)
 
     const res = await axios({
       method: 'POST',
@@ -13,9 +11,15 @@ const login = async (email, password) => {
         password,
       },
     })
-    console.log('res:', res)
+
+    if (res.data.status === 'success') {
+      alert('Logged in successfully!')
+      window.setTimeout(() => {
+        location.assign('/')
+      }, 1500)
+    }
   } catch (err) {
-    console.error('err:', err.response.data)
+    alert(err.response.data.message)
   }
 }
 
