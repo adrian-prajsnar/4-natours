@@ -28,9 +28,9 @@ export interface ITour {
   reviews?: IReview[]
 }
 
-interface ILocation {
+export interface ILocation {
   type: StartLocationType
-  coordinates: number[]
+  coordinates: [number, number]
   address?: string
   description?: string
   day?: number

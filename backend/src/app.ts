@@ -27,7 +27,18 @@ app.set('views', path.join(__dirname, 'views'))
 
 // 1) GLOBAL MIDDLEWARES
 // Serving static files
-app.use(express.static(path.join(__dirname, '..', 'public')))
+app.use(
+  express.static(path.join(__dirname, '..', '..', 'public'), {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript; charset=UTF-8')
+      }
+      if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css; charset=UTF-8')
+      }
+    },
+  })
+)
 
 // Set security HTTP headers
 app.use(
@@ -39,6 +50,9 @@ app.use(
           "'self'",
           'https://api.mapbox.com',
           'https://cdn.jsdelivr.net',
+          'https://cdnjs.cloudflare.com',
+          "'unsafe-inline'",
+          "'unsafe-eval'",
         ],
         workerSrc: ["'self'", 'blob:'],
         styleSrc: [
@@ -51,7 +65,8 @@ app.use(
           "'self'",
           'https://api.mapbox.com',
           'https://events.mapbox.com',
-        ],
+          process.env.NODE_ENV === 'development' ? 'ws://localhost:1234' : '',
+        ].filter(Boolean),
         imgSrc: ["'self'", 'data:', 'blob:'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       },

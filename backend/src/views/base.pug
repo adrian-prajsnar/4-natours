@@ -10,6 +10,10 @@ html
       )
       link(rel='stylesheet', href='/css/style.css')
       link(rel='shortcut icon', type='image/png', href='/img/favicon.png')
+      script(defer, type='module', src='/js/index.js')
+      script(
+        src='https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js'
+      )
       title Natours | #{ title }
   body
     include _header

@@ -11,15 +11,16 @@
         "skipLibCheck": true,
         "moduleResolution": "nodenext",
         "typeRoots": [
-            "./src/@types",
+            "./backend/src/@types",
             "./node_modules/@types"
         ]
     },
     "include": [
         "./**/*.ts",
-        "./public/js/**/*.js"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "public",
+        "dist"
     ]
 }

@@ -170,14 +170,13 @@ export const isLoggedIn = catchAsync(
 
 export const restrictTo = (...roles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const userRole = req.user?.role
-    if (!userRole) {
-      throw new Error(
-        'Unexpected error: User role is not defined in the request'
-      )
+    if (!req.user) {
+      next(new AppError('Please log in to access this resource', 401))
+      return
     }
 
-    if (!roles.includes(userRole)) {
+    const user = req.user as IUser
+    if (!roles.includes(user.role)) {
       next(
         new AppError('You do not have permission to perform this action', 403)
       )
@@ -277,8 +276,6 @@ export const resetPassword = catchAsync(
     user.passwordResetExpires = undefined
     await user.save()
 
-    // Update changedPasswordAt using userSchema.pre save method
-
     createSendToken(user, 200, res)
   }
 )
@@ -297,7 +294,14 @@ export const updatePassword = catchAsync(
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    const user = await User.findById(req.user?._id).select('+password')
+    if (!req.user) {
+      next(new AppError('Please log in to access this resource', 401))
+      return
+    }
+    const currentUser = req.user as IUser
+    const user = await User.findById(currentUser._id.toString()).select(
+      '+password'
+    )
     if (!user) {
       next(new AppError('User not found', 404))
       return
