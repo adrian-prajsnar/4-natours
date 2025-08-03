@@ -166,6 +166,7 @@ var _mapBox = require("./mapBox");
 var _alerts = require("./alerts");
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form');
+const logoutBtn = document.querySelector('.nav__el--logout');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
 if (mapBox) {
@@ -180,22 +181,22 @@ if (loginForm) loginForm.addEventListener('submit', (e)=>{
     if (email.value && password.value) (0, _login.login)(email.value, password.value);
     else (0, _alerts.showAlert)('error', 'Please provide email and password');
 });
+if (logoutBtn) logoutBtn.addEventListener('click', ()=>void (0, _login.logout)());
 
 },{"./login":"5d8yi","./mapBox":"2MBxo","./alerts":"8ESFe"}],"5d8yi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "login", ()=>login);
+parcelHelpers.export(exports, "logout", ()=>logout);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alertsJs = require("./alerts.js");
+const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
 const login = async (email, password)=>{
     try {
-        const baseURL = document.querySelector('main')?.dataset.url;
-        if (!baseURL) throw new Error('Base URL not found');
-        const url = `${baseURL}/api/v1/users/login`;
         const res = await (0, _axiosDefault.default)({
             method: 'POST',
-            url,
+            url: `${PROJECT_URL}/api/v1/users/login`,
             data: {
                 email,
                 password
@@ -213,6 +214,20 @@ const login = async (email, password)=>{
             return;
         }
         (0, _alertsJs.showAlert)('error', 'An error occurred during login');
+    }
+};
+const logout = async ()=>{
+    try {
+        const res = await (0, _axiosDefault.default)({
+            method: 'GET',
+            url: `${PROJECT_URL}/api/v1/users/logout`
+        });
+        if (res.data.status === 'success') {
+            location.reload();
+            (0, _alertsJs.showAlert)('success', 'Logged out successfully!');
+        }
+    } catch  {
+        (0, _alertsJs.showAlert)('error', 'Error logging out! Try again.');
     }
 };
 

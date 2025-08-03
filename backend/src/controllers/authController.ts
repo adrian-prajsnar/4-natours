@@ -88,6 +88,16 @@ export const login = catchAsync(
   }
 )
 
+export const logout = (_req: Request, res: Response): void => {
+  res.cookie('jwt', 'logged-out', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  })
+  res.status(200).json({
+    status: 'success',
+  })
+}
+
 export const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let token: string | undefined
@@ -140,7 +150,7 @@ export const protect = catchAsync(
 // Only for rendered pages, no errors!
 export const isLoggedIn = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    if (req.cookies.jwt) {
+    if (req.cookies.jwt && req.cookies.jwt !== 'logged-out') {
       const decoded = jwt.verify(
         req.cookies.jwt as string,
         getEnv('JWT_SECRET')

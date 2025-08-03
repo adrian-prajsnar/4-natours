@@ -7,6 +7,7 @@ import {
   updatePassword,
   protect,
   restrictTo,
+  logout,
 } from '../controllers/authController'
 import {
   createUser,
@@ -24,6 +25,7 @@ const usersRouter: Router = express.Router()
 
 usersRouter.post('/signup', signUp)
 usersRouter.post('/login', login)
+usersRouter.get('/logout', logout)
 usersRouter.post('/forgotPassword', forgotPassword)
 usersRouter.patch('/resetPassword/:token', resetPassword)
 

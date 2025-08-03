@@ -7,7 +7,7 @@ import AppError from '../utils/appError'
 
 export const getOverview = catchAsync(async (_req: Request, res: Response) => {
   const tours = await Tour.find()
-  res.status(200).render('overview', { title: 'All Tours', tours })
+  res.status(200).render('overview', { title: 'All Tours', tours, PROJECT_URL })
 })
 
 export const getTour = catchAsync(
@@ -25,7 +25,9 @@ export const getTour = catchAsync(
       return
     }
 
-    res.status(200).render('tour', { title: `${tour.name} Tour`, tour, roles })
+    res
+      .status(200)
+      .render('tour', { title: `${tour.name} Tour`, tour, roles, PROJECT_URL })
   }
 )
 

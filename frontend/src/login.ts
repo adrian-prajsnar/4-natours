@@ -1,21 +1,18 @@
 import axios from 'axios'
-import { LoginResponse } from './types.js'
 import { showAlert } from './alerts.js'
+import { LoginResponse, LogoutResponse } from './types.js'
 
 interface ErrorResponseData {
   message: string
 }
 
+const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-'
+
 export const login = async (email: string, password: string): Promise<void> => {
   try {
-    const baseURL = document.querySelector('main')?.dataset.url
-    if (!baseURL) throw new Error('Base URL not found')
-
-    const url = `${baseURL}/api/v1/users/login`
-
     const res = await axios<LoginResponse>({
       method: 'POST',
-      url,
+      url: `${PROJECT_URL}/api/v1/users/login`,
       data: {
         email,
         password,
@@ -37,5 +34,20 @@ export const login = async (email: string, password: string): Promise<void> => {
       return
     }
     showAlert('error', 'An error occurred during login')
+  }
+}
+
+export const logout = async () => {
+  try {
+    const res = await axios<LogoutResponse>({
+      method: 'GET',
+      url: `${PROJECT_URL}/api/v1/users/logout`,
+    })
+    if (res.data.status === 'success') {
+      location.reload()
+      showAlert('success', 'Logged out successfully!')
+    }
+  } catch {
+    showAlert('error', 'Error logging out! Try again.')
   }
 }

@@ -28,6 +28,10 @@ export interface LoginResponse {
   }
 }
 
+export interface LogoutResponse {
+  status: 'success' | 'error'
+}
+
 declare global {
   interface Window {
     mapboxgl: typeof mapboxgl

@@ -17,6 +17,7 @@ html
       title Natours | #{ title }
   body
     include _header
-    block content
-      h1 This is a placeholder heading
+    main(data-project-url=PROJECT_URL)
+      block content
+        h1 This is a placeholder heading
     include _footer

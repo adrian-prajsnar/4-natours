@@ -1,10 +1,11 @@
-import { login } from './login'
+import { login, logout } from './login'
 import { displayMap } from './mapBox'
 import { showAlert } from './alerts'
 import { ILocation } from '../../backend/src/models/tourModel'
 
 const mapBox = document.getElementById('map')
-const loginForm = document.querySelector<HTMLFormElement>('.form')
+const loginForm = document.querySelector('.form')
+const logoutBtn = document.querySelector('.nav__el--logout')
 
 const email = document.getElementById('email') as HTMLInputElement
 const password = document.getElementById('password') as HTMLInputElement
@@ -26,4 +27,8 @@ if (loginForm) {
       showAlert('error', 'Please provide email and password')
     }
   })
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => void logout())
 }
