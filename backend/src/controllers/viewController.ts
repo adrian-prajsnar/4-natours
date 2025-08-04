@@ -21,7 +21,7 @@ export const getTour = catchAsync(
     })
 
     if (!tour) {
-      next(new AppError(`No tour found with that slug`, 404))
+      next(new AppError(`There is no tour with that name.`, 404))
       return
     }
 

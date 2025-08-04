@@ -4,6 +4,7 @@ import AppError from '../utils/appError'
 interface SendErrorOptions {
   err: AppError
   res: Response
+  req: Request
   status: string
   statusCode: number
 }
@@ -34,36 +35,70 @@ const handleJwtExpiredError = () =>
 const sendErrorDev = ({
   err,
   res,
+  req,
   status,
   statusCode,
 }: SendErrorOptions): void => {
-  res.status(statusCode).json({
-    status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
-  })
+  // API
+  if (req.originalUrl.startsWith('/api')) {
+    res.status(statusCode).json({
+      status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    })
+  }
+  // RENDERED WEBSITE
+  else {
+    console.error('ERROR 💥', err)
+    res.status(statusCode).render('error', {
+      title: 'Something went wrong',
+      msg: err.message,
+    })
+  }
 }
 
 const sendErrorProd = ({
   err,
   res,
+  req,
   status,
   statusCode,
 }: SendErrorOptions): void => {
   // Operational, trusted error: send message to client
-  if (err.isOperational)
-    res.status(statusCode).json({
-      status,
-      message: err.message,
-    })
-  // Programming or other unknown error: don't leak error details
+  // API
+  if (req.originalUrl.startsWith('/api')) {
+    if (err.isOperational) {
+      res.status(statusCode).json({
+        status,
+        message: err.message,
+      })
+    }
+    // Programming or other unknown error: don't leak error details
+    else {
+      console.error('ERROR 💥', err)
+      res.status(500).json({
+        status: 'error',
+        message: 'Something went very wrong!',
+      })
+    }
+  }
+  // RENDERED WEBSITE
   else {
-    console.error('ERROR ❌', err)
-    res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong!',
-    })
+    if (err.isOperational) {
+      res.status(statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: err.message,
+      })
+    }
+    // Programming or other unknown error: don't leak error details
+    else {
+      console.error('ERROR 💥', err)
+      res.status(500).json({
+        status: 'error',
+        message: 'Please try again later.',
+      })
+    }
   }
 }
 
@@ -83,7 +118,7 @@ function globalErrorHandler(
 
   if (process.env.NODE_ENV === 'development') {
     const { status, statusCode } = getErrorStatus(devErr)
-    sendErrorDev({ err: devErr, res, status, statusCode })
+    sendErrorDev({ err: devErr, res, req, status, statusCode })
   }
 
   if (process.env.NODE_ENV === 'production') {
@@ -95,7 +130,7 @@ function globalErrorHandler(
     if (err.name === 'TokenExpiredError') prodErr = handleJwtExpiredError()
 
     const { status, statusCode } = getErrorStatus(prodErr)
-    sendErrorProd({ err: prodErr, res, status, statusCode })
+    sendErrorProd({ err: prodErr, res, req, status, statusCode })
   }
 
   next()
