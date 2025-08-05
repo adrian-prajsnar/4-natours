@@ -1,6 +1,7 @@
 import express from 'express'
-import { isLoggedIn } from '../controllers/authController'
+import { isLoggedIn, protect } from '../controllers/authController'
 import {
+  getAccount,
   getLoginForm,
   getOverview,
   getTour,
@@ -8,9 +9,9 @@ import {
 
 const viewsRouter = express.Router()
 
-viewsRouter.use(isLoggedIn)
-viewsRouter.get('/', getOverview)
-viewsRouter.get('/tours/:slug', getTour)
-viewsRouter.get('/login', getLoginForm)
+viewsRouter.get('/', isLoggedIn, getOverview)
+viewsRouter.get('/tours/:slug', isLoggedIn, getTour)
+viewsRouter.get('/login', isLoggedIn, getLoginForm)
+viewsRouter.get('/me', protect, getAccount)
 
 export default viewsRouter

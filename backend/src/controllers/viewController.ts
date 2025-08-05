@@ -37,3 +37,10 @@ export const getLoginForm = (_req: Request, res: Response) => {
     PROJECT_URL,
   })
 }
+
+export const getAccount = (req: Request, res: Response) => {
+  res.status(200).render('account', {
+    title: 'Your account',
+    PROJECT_URL,
+  })
+}
