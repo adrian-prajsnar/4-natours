@@ -165,7 +165,7 @@ var _login = require("./login");
 var _mapBox = require("./mapBox");
 var _alerts = require("./alerts");
 const mapBox = document.getElementById('map');
-const loginForm = document.querySelector('.form');
+const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
@@ -223,7 +223,7 @@ const logout = async ()=>{
             url: `${PROJECT_URL}/api/v1/users/logout`
         });
         if (res.data.status === 'success') {
-            location.reload();
+            location.href = '/';
             (0, _alertsJs.showAlert)('success', 'Logged out successfully!');
         }
     } catch  {

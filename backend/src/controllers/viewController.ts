@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
+import { IUser, User } from '../models/userModel'
 import { UserRole } from '../utils/enums'
 import { PROJECT_URL } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
@@ -44,3 +45,31 @@ export const getAccount = (req: Request, res: Response) => {
     PROJECT_URL,
   })
 }
+
+interface UpdateUserDataRequest extends Request {
+  user?: IUser
+  body: { name?: string; email?: string }
+}
+
+export const updateUserData = catchAsync(
+  async (req: UpdateUserDataRequest, res: Response) => {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user?._id,
+      { name: req.body.name, email: req.body.email },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+
+    if (!updatedUser) {
+      throw new AppError('No user found with that ID', 404)
+    }
+
+    res.status(200).render('account', {
+      title: 'Your account',
+      user: updatedUser,
+      PROJECT_URL,
+    })
+  }
+)

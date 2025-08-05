@@ -4,7 +4,7 @@ import { showAlert } from './alerts'
 import { ILocation } from '../../backend/src/models/tourModel'
 
 const mapBox = document.getElementById('map')
-const loginForm = document.querySelector('.form')
+const loginForm = document.querySelector('.form--login')
 const logoutBtn = document.querySelector('.nav__el--logout')
 
 const email = document.getElementById('email') as HTMLInputElement
