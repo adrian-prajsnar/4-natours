@@ -164,11 +164,11 @@
 var _login = require("./login");
 var _mapBox = require("./mapBox");
 var _alerts = require("./alerts");
+var _updateSettings = require("./updateSettings");
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
-const email = document.getElementById('email');
-const password = document.getElementById('password');
+const userDataForm = document.querySelector('.form-user-data');
 if (mapBox) {
     const locationsData = mapBox.dataset.locations;
     if (locationsData) {
@@ -178,12 +178,21 @@ if (mapBox) {
 }
 if (loginForm) loginForm.addEventListener('submit', (e)=>{
     e.preventDefault();
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
     if (email.value && password.value) (0, _login.login)(email.value, password.value);
     else (0, _alerts.showAlert)('error', 'Please provide email and password');
 });
 if (logoutBtn) logoutBtn.addEventListener('click', ()=>void (0, _login.logout)());
+if (userDataForm) userDataForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    if (email.value || name.value) (0, _updateSettings.updateData)(email.value, name.value);
+    else (0, _alerts.showAlert)('error', 'Please provide correct data');
+});
 
-},{"./login":"5d8yi","./mapBox":"2MBxo","./alerts":"8ESFe"}],"5d8yi":[function(require,module,exports,__globalThis) {
+},{"./login":"5d8yi","./mapBox":"2MBxo","./alerts":"8ESFe","./updateSettings":"hUuk3"}],"5d8yi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "login", ()=>login);
@@ -5117,5 +5126,33 @@ const displayMap = (locations)=>{
     });
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}]},["2V405"], "2V405", "parcelRequire11c7", {})
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}],"hUuk3":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "updateData", ()=>updateData);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
+const updateData = async (email, name)=>{
+    try {
+        const res = await (0, _axiosDefault.default)({
+            method: 'PATCH',
+            url: `${PROJECT_URL}/api/v1/users/updateMe`,
+            data: {
+                email,
+                name
+            }
+        });
+        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Data updated successfully!');
+    } catch (err) {
+        if ((0, _axiosDefault.default).isAxiosError(err) && err.response?.data.message) {
+            (0, _alerts.showAlert)('error', err.response.data.message);
+            return;
+        }
+        (0, _alerts.showAlert)('error', 'An unexpected error occurred during login');
+    }
+};
+
+},{"axios":"gIwns","./alerts":"8ESFe","@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}]},["2V405"], "2V405", "parcelRequire11c7", {})
 

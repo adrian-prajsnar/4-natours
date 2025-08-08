@@ -1,4 +1,5 @@
 import mapboxgl from 'mapbox-gl'
+import { IUser } from '../../backend/src/models/userModel'
 
 export interface ApiErrorResponse {
   status: 'fail' | 'error'
@@ -17,19 +18,15 @@ export function isApiErrorResponse(obj: unknown): obj is ApiErrorResponse {
   )
 }
 
-export interface LoginResponse {
-  status: 'success' | 'fail' | 'error'
+export interface UserResponse {
+  status: 'success' | 'fail'
   data: {
-    user: {
-      name: string
-      email: string
-      role: string
-    }
+    user: IUser
   }
 }
 
 export interface LogoutResponse {
-  status: 'success' | 'error'
+  status: 'success' | 'fail'
 }
 
 declare global {

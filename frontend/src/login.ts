@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { showAlert } from './alerts.js'
-import { LoginResponse, LogoutResponse } from './types.js'
+import { UserResponse, LogoutResponse } from './types.js'
 
-interface ErrorResponseData {
+export interface ErrorResponseData {
   message: string
 }
 
@@ -10,7 +10,7 @@ const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-'
 
 export const login = async (email: string, password: string): Promise<void> => {
   try {
-    const res = await axios<LoginResponse>({
+    const res = await axios<UserResponse>({
       method: 'POST',
       url: `${PROJECT_URL}/api/v1/users/login`,
       data: {

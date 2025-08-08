@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
-import { User } from '../models/userModel'
+import { User, IUser } from '../models/userModel'
+
+interface CustomRequest extends Request {
+  user?: IUser
+}
 import { deleteOne, getAll, getOne, updateOne } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
@@ -9,38 +13,53 @@ export const getUser = getOne(User)
 export const updateUser = updateOne(User)
 export const deleteUser = deleteOne(User)
 
-const filterObj = (
-  obj: Record<string, unknown>,
-  ...allowedFields: string[]
-) => {
-  const newObj: Record<string, unknown> = {}
+const filterObj = <T extends Record<string, unknown>>(
+  obj: T,
+  ...allowedFields: (keyof T)[]
+): Partial<T> => {
+  const newObj: Partial<T> = {}
   Object.keys(obj).forEach(el => {
-    if (allowedFields.includes(el)) newObj[el] = obj[el]
+    if (allowedFields.includes(el as keyof T)) {
+      newObj[el as keyof T] = obj[el as keyof T]
+    }
   })
   return newObj
 }
 
-export const getMe = (req: Request, _res: Response, next: NextFunction) => {
-  req.params.id = req.user?._id ?? ''
+export const getMe = (
+  req: CustomRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  if (!req.user?._id) {
+    next(new AppError('User not found', 404))
+    return
+  }
+  req.params.id = req.user._id
   next()
 }
 
 export const updateMe = catchAsync(
   async (
-    req: Request<
-      unknown,
-      unknown,
-      {
-        password: string
-        passwordConfirm: string
-        name: string
-        email: string
+    req: CustomRequest & {
+      body: {
+        password?: string
+        passwordConfirm?: string
+        name?: string
+        email?: string
       }
-    >,
+    },
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    if (req.body.password || req.body.passwordConfirm) {
+    const typedBody = req.body as {
+      password?: string
+      passwordConfirm?: string
+      name?: string
+      email?: string
+    }
+
+    if (typedBody.password || typedBody.passwordConfirm) {
       next(
         new AppError(
           'This route is not for password updates. Please use /updateMyPassword route',
@@ -50,9 +69,14 @@ export const updateMe = catchAsync(
       return
     }
 
-    const filteredBody = filterObj(req.body, 'name', 'email')
+    if (!req.user?._id) {
+      next(new AppError('User not found', 404))
+      return
+    }
+
+    const filteredBody = filterObj(typedBody, 'name', 'email')
     const updatedUser = await User.findByIdAndUpdate(
-      req.user?._id,
+      req.user._id,
       filteredBody,
       {
         new: true,
@@ -70,8 +94,16 @@ export const updateMe = catchAsync(
 )
 
 export const deleteMe = catchAsync(
-  async (req: Request, res: Response): Promise<void> => {
-    await User.findByIdAndUpdate(req.user?._id, { active: false })
+  async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    if (!req.user?._id) {
+      next(new AppError('User not found', 404))
+      return
+    }
+    await User.findByIdAndUpdate(req.user._id, { active: false })
 
     res.status(204).json({
       status: 'success',
