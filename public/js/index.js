@@ -169,6 +169,7 @@ const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
 const userDataForm = document.querySelector('.form-user-data');
+const userPasswordForm = document.querySelector('.form-user-password');
 if (mapBox) {
     const locationsData = mapBox.dataset.locations;
     if (locationsData) {
@@ -188,8 +189,39 @@ if (userDataForm) userDataForm.addEventListener('submit', (e)=>{
     e.preventDefault();
     const name = document.getElementById('name');
     const email = document.getElementById('email');
-    if (email.value || name.value) (0, _updateSettings.updateData)(email.value, name.value);
+    if (email.value || name.value) (0, _updateSettings.updateSettings)({
+        data: {
+            email: email.value,
+            name: name.value
+        },
+        type: 'data'
+    });
     else (0, _alerts.showAlert)('error', 'Please provide correct data');
+});
+if (userPasswordForm) userPasswordForm.addEventListener('submit', (e)=>{
+    (async ()=>{
+        e.preventDefault();
+        const btn = document.querySelector('.btn--save-password');
+        if (!btn) return new Error('Unexpected error: btn not selected');
+        btn.textContent = 'Updating...';
+        const currentPassword = document.getElementById('password-current');
+        const newPassword = document.getElementById('password');
+        const newPasswordConfirm = document.getElementById('password-confirm');
+        if (currentPassword.value && newPassword.value && newPasswordConfirm.value) {
+            await (0, _updateSettings.updateSettings)({
+                data: {
+                    currentPassword: currentPassword.value,
+                    newPassword: newPassword.value,
+                    newPasswordConfirm: newPasswordConfirm.value
+                },
+                type: 'password'
+            });
+            btn.textContent = 'Save password';
+            currentPassword.value = '';
+            newPassword.value = '';
+            newPasswordConfirm.value = '';
+        } else (0, _alerts.showAlert)('error', 'Please provide correct data');
+    })();
 });
 
 },{"./login":"5d8yi","./mapBox":"2MBxo","./alerts":"8ESFe","./updateSettings":"hUuk3"}],"5d8yi":[function(require,module,exports,__globalThis) {
@@ -5129,22 +5161,19 @@ const displayMap = (locations)=>{
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}],"hUuk3":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "updateData", ()=>updateData);
+parcelHelpers.export(exports, "updateSettings", ()=>updateSettings);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
-const updateData = async (email, name)=>{
+const updateSettings = async ({ data, type })=>{
     try {
         const res = await (0, _axiosDefault.default)({
             method: 'PATCH',
-            url: `${PROJECT_URL}/api/v1/users/updateMe`,
-            data: {
-                email,
-                name
-            }
+            url: `${PROJECT_URL}/api/v1/users/update${type === 'password' ? 'MyPassword' : 'Me'}`,
+            data
         });
-        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Data updated successfully!');
+        if (res.data.status === 'success') (0, _alerts.showAlert)('success', `User's ${type} updated successfully!`);
     } catch (err) {
         if ((0, _axiosDefault.default).isAxiosError(err) && err.response?.data.message) {
             (0, _alerts.showAlert)('error', err.response.data.message);
