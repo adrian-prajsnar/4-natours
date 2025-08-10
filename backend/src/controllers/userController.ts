@@ -52,6 +52,9 @@ export const updateMe = catchAsync(
     res: Response,
     next: NextFunction
   ): Promise<void> => {
+    console.log(req.file)
+    console.log(req.body)
+
     const typedBody = req.body as {
       password?: string
       passwordConfirm?: string
