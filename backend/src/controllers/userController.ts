@@ -74,28 +74,19 @@ export const getMe = (
 
 export const updateMe = catchAsync(
   async (
-    req: CustomRequest & {
-      body: {
-        password?: string
-        passwordConfirm?: string
-        name?: string
-        email?: string
-      }
-    },
+    req: CustomRequest,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    console.log(req.file)
-    console.log(req.body)
-
-    const typedBody = req.body as {
+    const body = req.body as {
       password?: string
       passwordConfirm?: string
       name?: string
       email?: string
+      photo?: string
     }
 
-    if (typedBody.password || typedBody.passwordConfirm) {
+    if (body.password || body.passwordConfirm) {
       next(
         new AppError(
           'This route is not for password updates. Please use /updateMyPassword route',
@@ -110,7 +101,10 @@ export const updateMe = catchAsync(
       return
     }
 
-    const filteredBody = filterObj(typedBody, 'name', 'email')
+    const filteredBody = filterObj(body, 'name', 'email')
+    if (req.file) {
+      filteredBody.photo = req.file.filename
+    }
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       filteredBody,
