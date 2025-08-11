@@ -16,6 +16,7 @@ import {
   getAllUsers,
   getMe,
   getUser,
+  resizeUserPhoto,
   updateMe,
   updateUser,
   uploadUserPhoto,
@@ -33,7 +34,7 @@ usersRouter.patch('/resetPassword/:token', resetPassword)
 // Protect all routes after this middleware
 usersRouter.use(protect)
 usersRouter.get('/me', getMe, getUser)
-usersRouter.patch('/updateMe', uploadUserPhoto, updateMe)
+usersRouter.patch('/updateMe', uploadUserPhoto, resizeUserPhoto, updateMe)
 usersRouter.delete('/deleteMe', deleteMe)
 usersRouter.patch('/updateMyPassword', updatePassword)
 

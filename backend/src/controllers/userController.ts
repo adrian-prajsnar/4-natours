@@ -1,26 +1,16 @@
 import multer from 'multer'
+import sharp from 'sharp'
 import { NextFunction, Request, Response } from 'express'
 import { User, IUser } from '../models/userModel'
 import { deleteOne, getAll, getOne, updateOne } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
 
-const multerDestination = 'public/img/users'
+interface CustomRequest extends Request {
+  user?: IUser
+}
 
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, multerDestination)
-  },
-  filename: (req: CustomRequest, file, cb) => {
-    const ext = file.mimetype.split('/')[1]
-    const userId = req.user?._id
-    if (!userId) {
-      cb(new Error('Unexpected error: user not found'), '')
-      return
-    }
-    cb(null, `user-${userId}-${Date.now().toString()}.${ext}`)
-  },
-})
+const multerStorage = multer.memoryStorage()
 
 const multerFilter = (
   req: CustomRequest,
@@ -37,9 +27,31 @@ const multerFilter = (
 const upload = multer({ storage: multerStorage, fileFilter: multerFilter })
 export const uploadUserPhoto = upload.single('photo')
 
-interface CustomRequest extends Request {
-  user?: IUser
-}
+export const resizeUserPhoto = catchAsync(
+  async (req: CustomRequest, res: Response, next: NextFunction) => {
+    if (!req.file) {
+      next()
+      return
+    }
+
+    const userId = req.user?._id
+    if (!userId) {
+      new AppError('Unexpected error: user not found', 404)
+      return
+    }
+    req.file.filename = `user-${userId}-${Date.now().toString()}.jpeg`
+
+    await sharp(req.file.buffer)
+      .resize(500, 500)
+      .toFormat('jpeg')
+      .jpeg({
+        quality: 90,
+      })
+      .toFile(`public/img/users/${req.file.filename}`)
+
+    next()
+  }
+)
 
 export const getAllUsers = getAll(User)
 export const getUser = getOne(User)
