@@ -1,12 +1,45 @@
+import multer from 'multer'
 import { NextFunction, Request, Response } from 'express'
 import { User, IUser } from '../models/userModel'
+import { deleteOne, getAll, getOne, updateOne } from './handlerFactory'
+import catchAsync from '../utils/catchAsync'
+import AppError from '../utils/appError'
+
+const multerDestination = 'public/img/users'
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, multerDestination)
+  },
+  filename: (req: CustomRequest, file, cb) => {
+    const ext = file.mimetype.split('/')[1]
+    const userId = req.user?._id
+    if (!userId) {
+      cb(new Error('Unexpected error: user not found'), '')
+      return
+    }
+    cb(null, `user-${userId}-${Date.now().toString()}.${ext}`)
+  },
+})
+
+const multerFilter = (
+  req: CustomRequest,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true)
+  } else {
+    cb(new AppError('Not an image! Please upload only images', 400))
+  }
+}
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter })
+export const uploadUserPhoto = upload.single('photo')
 
 interface CustomRequest extends Request {
   user?: IUser
 }
-import { deleteOne, getAll, getOne, updateOne } from './handlerFactory'
-import catchAsync from '../utils/catchAsync'
-import AppError from '../utils/appError'
 
 export const getAllUsers = getAll(User)
 export const getUser = getOne(User)
