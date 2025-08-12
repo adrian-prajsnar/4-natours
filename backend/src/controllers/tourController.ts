@@ -1,3 +1,5 @@
+import multer from 'multer'
+import sharp from 'sharp'
 import { NextFunction, Request, Response } from 'express'
 import { Tour, ToursMonthlyPlan, ToursStats } from '../models/tourModel'
 import {
@@ -9,6 +11,74 @@ import {
 } from './handlerFactory'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
+
+const multerStorage = multer.memoryStorage()
+
+const multerFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true)
+  } else {
+    cb(new AppError('Not an image! Please upload only images', 400))
+  }
+}
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter })
+export const uploadTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+])
+
+interface RequestWithFiles extends Request {
+  files?:
+    | {
+        imageCover?: Express.Multer.File[]
+        images?: Express.Multer.File[]
+      }
+    | Express.Multer.File[]
+}
+
+export const resizeTourImages = catchAsync(
+  async (req: RequestWithFiles, res: Response, next: NextFunction) => {
+    const files = req.files as {
+      imageCover?: Express.Multer.File[]
+      images?: Express.Multer.File[]
+    }
+
+    if (!files.imageCover || !files.images) {
+      next()
+      return
+    }
+
+    const body = req.body as { imageCover?: string; images?: string[] }
+    body.images = []
+
+    const imageCoverFilename = `tour-${req.params.id}-${Date.now().toString()}-cover.jpeg`
+    await sharp(files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/tours/${imageCoverFilename}`)
+    body.imageCover = imageCoverFilename
+
+    await Promise.all(
+      (files.images ?? []).map(async (file, i) => {
+        const filename = `tour-${req.params.id}-${Date.now().toString()}-${(i + 1).toString()}.jpeg`
+        await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/img/tours/${filename}`)
+        body.images?.push(filename)
+      })
+    )
+
+    next()
+  }
+)
 
 export const getAllTours = getAll(Tour)
 export const getTour = getOne(Tour, { path: 'reviews' })

@@ -22,6 +22,9 @@ interface CreateReviewRequest extends Request {
     tour?: string
     user?: string
   }
+  user?: {
+    _id: string
+  }
 }
 
 export const setTourUserIds = (

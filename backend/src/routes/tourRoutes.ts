@@ -11,7 +11,9 @@ import {
   getTour,
   getToursStats,
   getToursWithin,
+  resizeTourImages,
   updateTour,
+  uploadTourImages,
 } from '../controllers/tourController'
 import reviewRouter from './reviewRoutes'
 
@@ -38,7 +40,13 @@ toursRouter
 toursRouter
   .route('/:id')
   .get(getTour)
-  .patch(protect, restrictTo(UserRole.ADMIN, UserRole.LEAD_GUIDE), updateTour)
+  .patch(
+    protect,
+    restrictTo(UserRole.ADMIN, UserRole.LEAD_GUIDE),
+    uploadTourImages,
+    resizeTourImages,
+    updateTour
+  )
   .delete(protect, restrictTo(UserRole.ADMIN, UserRole.LEAD_GUIDE), deleteTour)
 
 export default toursRouter
