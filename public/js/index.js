@@ -165,6 +165,11 @@ var _login = require("./login");
 var _mapBox = require("./mapBox");
 var _alerts = require("./alerts");
 var _updateSettings = require("./updateSettings");
+const successMessage = sessionStorage.getItem('updateSuccess');
+if (successMessage) {
+    (0, _alerts.showAlert)('success', successMessage);
+    sessionStorage.removeItem('updateSuccess');
+}
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
@@ -186,17 +191,20 @@ if (loginForm) loginForm.addEventListener('submit', (e)=>{
 });
 if (logoutBtn) logoutBtn.addEventListener('click', ()=>void (0, _login.logout)());
 if (userDataForm) userDataForm.addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const name = document.getElementById('name');
-    const email = document.getElementById('email');
-    if (email.value || name.value) (0, _updateSettings.updateSettings)({
-        data: {
-            email: email.value,
-            name: name.value
-        },
-        type: 'data'
-    });
-    else (0, _alerts.showAlert)('error', 'Please provide correct data');
+    (async ()=>{
+        e.preventDefault();
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
+        const photo = document.getElementById('photo');
+        const formData = new FormData();
+        if (name.value) formData.append('name', name.value);
+        if (email.value) formData.append('email', email.value);
+        if (photo.files?.[0]) formData.append('photo', photo.files[0]);
+        await (0, _updateSettings.updateSettings)({
+            data: formData,
+            type: 'data'
+        });
+    })();
 });
 if (userPasswordForm) userPasswordForm.addEventListener('submit', (e)=>{
     (async ()=>{
@@ -5173,7 +5181,10 @@ const updateSettings = async ({ data, type })=>{
             url: `${PROJECT_URL}/api/v1/users/update${type === 'password' ? 'MyPassword' : 'Me'}`,
             data
         });
-        if (res.data.status === 'success') (0, _alerts.showAlert)('success', `User's ${type} updated successfully!`);
+        if (res.data.status === 'success') {
+            sessionStorage.setItem('updateSuccess', `User's ${type} updated successfully!`);
+            location.reload();
+        }
     } catch (err) {
         if ((0, _axiosDefault.default).isAxiosError(err) && err.response?.data.message) {
             (0, _alerts.showAlert)('error', err.response.data.message);

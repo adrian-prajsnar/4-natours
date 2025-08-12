@@ -6,13 +6,15 @@ import { UserResponse } from './types'
 const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-'
 
 interface UpdateSettingsArg {
-  data: {
-    email?: string
-    name?: string
-    currentPassword?: string
-    newPassword?: string
-    newPasswordConfirm?: string
-  }
+  data:
+    | FormData
+    | {
+        email?: string
+        name?: string
+        currentPassword?: string
+        newPassword?: string
+        newPasswordConfirm?: string
+      }
   type: 'password' | 'data'
 }
 
@@ -25,7 +27,11 @@ export const updateSettings = async ({ data, type }: UpdateSettingsArg) => {
     })
 
     if (res.data.status === 'success') {
-      showAlert('success', `User's ${type} updated successfully!`)
+      sessionStorage.setItem(
+        'updateSuccess',
+        `User's ${type} updated successfully!`
+      )
+      location.reload()
     }
   } catch (err: unknown) {
     if (

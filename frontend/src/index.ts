@@ -4,6 +4,12 @@ import { showAlert } from './alerts'
 import { ILocation } from '../../backend/src/models/tourModel'
 import { updateSettings } from './updateSettings'
 
+const successMessage = sessionStorage.getItem('updateSuccess')
+if (successMessage) {
+  showAlert('success', successMessage)
+  sessionStorage.removeItem('updateSuccess')
+}
+
 const mapBox = document.getElementById('map')
 const loginForm = document.querySelector('.form--login')
 const logoutBtn = document.querySelector('.nav__el--logout')
@@ -36,21 +42,23 @@ if (logoutBtn) {
 }
 
 if (userDataForm) {
-  userDataForm.addEventListener('submit', e => {
-    e.preventDefault()
-    const name = document.getElementById('name') as HTMLInputElement
-    const email = document.getElementById('email') as HTMLInputElement
-    if (email.value || name.value) {
-      void updateSettings({
-        data: {
-          email: email.value,
-          name: name.value,
-        },
+  userDataForm.addEventListener('submit', (e: Event) => {
+    void (async () => {
+      e.preventDefault()
+      const name = document.getElementById('name') as HTMLInputElement
+      const email = document.getElementById('email') as HTMLInputElement
+      const photo = document.getElementById('photo') as HTMLInputElement
+
+      const formData = new FormData()
+      if (name.value) formData.append('name', name.value)
+      if (email.value) formData.append('email', email.value)
+      if (photo.files?.[0]) formData.append('photo', photo.files[0])
+
+      await updateSettings({
+        data: formData,
         type: 'data',
       })
-    } else {
-      showAlert('error', 'Please provide correct data')
-    }
+    })()
   })
 }
 
