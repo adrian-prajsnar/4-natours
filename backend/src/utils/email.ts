@@ -19,27 +19,28 @@ export class Email {
   }
 
   newTransport(): Transporter {
+    let transportOptions: SMTPTransport.Options
+
     if (getEnv('NODE_ENV') === 'production') {
-      // Sendgrid
-      // Placeholder for Sendgrid transport. Example:
-      // return createTransport(sendgridTransport({ apiKey: getEnv('SENDGRID_API_KEY') }))
-      // For now, fall back to SMTP transport below.
+      transportOptions = {
+        service: 'SendGrid',
+        auth: {
+          user: getEnv('SENDGRID_USERNAME'),
+          pass: getEnv('SENDGRID_PASSWORD'),
+        },
+      }
+    } else {
+      transportOptions = {
+        host: getEnv('EMAIL_HOST'),
+        port: parseInt(getEnv('EMAIL_PORT')),
+        auth: {
+          user: getEnv('EMAIL_USERNAME'),
+          pass: getEnv('EMAIL_PASSWORD'),
+        },
+      }
     }
 
-    const transportConfig: SMTPTransport.Options = {
-      host: getEnv('EMAIL_HOST'),
-      port: parseInt(getEnv('EMAIL_PORT')),
-      auth: {
-        user: getEnv('EMAIL_USERNAME'),
-        pass: getEnv('EMAIL_PASSWORD'),
-      },
-      secure: getEnv('NODE_ENV') === 'production',
-      tls: {
-        rejectUnauthorized: getEnv('NODE_ENV') === 'production',
-      },
-    }
-
-    return createTransport(transportConfig)
+    return createTransport(transportOptions)
   }
 
   // Send the actual email
