@@ -219,7 +219,7 @@ export const forgotPassword = catchAsync(
       return
     }
 
-    // const resetToken = user.createPasswordResetToken()
+    const resetToken = user.createPasswordResetToken()
     await user.save({ validateBeforeSave: false })
 
     const host = req.get('host')
@@ -227,15 +227,9 @@ export const forgotPassword = catchAsync(
       throw new Error('Unexpected error: Host is not defined')
     }
 
-    // const resetUrl = `${req.protocol}://${host}/api/v1/users/resetPassword/${resetToken}`
-    // const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}\nIf you didn't forget your password, please ignore this email!`
-
     try {
-      // await sendEmail({
-      //   email: user.email,
-      //   subject: `Your password reset token (valid for ${getEnv('PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES')} minutes)`,
-      //   message,
-      // })
+      const resetUrl = `${req.protocol}://${host}/api/v1/users/resetPassword/${resetToken}`
+      await new Email(user, resetUrl).sendPasswordReset()
     } catch (error) {
       console.error(error)
       user.passwordResetToken = undefined
