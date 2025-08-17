@@ -6,7 +6,7 @@ import { UserRole } from '../utils/enums'
 import { getEnv } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
-import sendEmail from '../utils/email'
+import { Email } from '../utils/email'
 
 const signToken = (id: string) => {
   return jwt.sign({ id }, getEnv('JWT_SECRET'), {
@@ -54,7 +54,10 @@ export const signUp = catchAsync(
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
     })
-
+    // const url = `${getEnv('PROJECT_URL')}/me`
+    const url = `${req.protocol}://${req.get('host') ?? '-'}/me`
+    console.log(url)
+    await new Email(newUser, url).sendWelcome()
     createSendToken(newUser, 201, res)
   }
 )
@@ -216,7 +219,7 @@ export const forgotPassword = catchAsync(
       return
     }
 
-    const resetToken = user.createPasswordResetToken()
+    // const resetToken = user.createPasswordResetToken()
     await user.save({ validateBeforeSave: false })
 
     const host = req.get('host')
@@ -224,15 +227,15 @@ export const forgotPassword = catchAsync(
       throw new Error('Unexpected error: Host is not defined')
     }
 
-    const resetUrl = `${req.protocol}://${host}/api/v1/users/resetPassword/${resetToken}`
-    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}\nIf you didn't forget your password, please ignore this email!`
+    // const resetUrl = `${req.protocol}://${host}/api/v1/users/resetPassword/${resetToken}`
+    // const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}\nIf you didn't forget your password, please ignore this email!`
 
     try {
-      await sendEmail({
-        email: user.email,
-        subject: `Your password reset token (valid for ${getEnv('PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES')} minutes)`,
-        message,
-      })
+      // await sendEmail({
+      //   email: user.email,
+      //   subject: `Your password reset token (valid for ${getEnv('PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES')} minutes)`,
+      //   message,
+      // })
     } catch (error) {
       console.error(error)
       user.passwordResetToken = undefined
