@@ -12,6 +12,7 @@ import viewsRouter from './routes/viewRoutes'
 import toursRouter from './routes/tourRoutes'
 import usersRouter from './routes/userRoutes'
 import reviewsRouter from './routes/reviewRoutes'
+import bookingsRouter from './routes/bookingRoutes'
 import globalErrorHandler from './controllers/errorController'
 
 declare module 'express-serve-static-core' {
@@ -168,6 +169,7 @@ app.use('/', viewsRouter)
 app.use('/api/v1/tours', toursRouter)
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/reviews', reviewsRouter)
+app.use('/api/v1/bookings', bookingsRouter)
 
 app.all('*', (req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404))

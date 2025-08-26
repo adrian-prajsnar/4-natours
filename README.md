@@ -11,4 +11,5 @@ EMAIL_HOST=sandbox.smtp.mailtrap.io
 EMAIL_PORT=2525
 SENDGRID_USERNAME=your-sengrid-username
 SENDGRID_PASSWORD=your-sendgrid-password
+STRIPE_SECRET_KEY=your-stripe-secret-key
 ```
