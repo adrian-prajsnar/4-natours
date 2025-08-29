@@ -3,6 +3,7 @@ import { displayMap } from './mapBox'
 import { showAlert } from './alerts'
 import { ILocation } from '../../backend/src/models/tourModel'
 import { updateSettings } from './updateSettings'
+import { bookTour } from './stripe'
 
 const successMessage = sessionStorage.getItem('updateSuccess')
 if (successMessage) {
@@ -15,6 +16,7 @@ const loginForm = document.querySelector('.form--login')
 const logoutBtn = document.querySelector('.nav__el--logout')
 const userDataForm = document.querySelector('.form-user-data')
 const userPasswordForm = document.querySelector('.form-user-password')
+const bookBtn = document.getElementById('book-tour')
 
 if (mapBox) {
   const locationsData = mapBox.dataset.locations
@@ -105,5 +107,17 @@ if (userPasswordForm) {
         showAlert('error', 'Please provide correct data')
       }
     })()
+  })
+}
+
+if (bookBtn) {
+  bookBtn.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as HTMLButtonElement
+    target.textContent = 'Processing...'
+    const tourId = target.dataset.tourId
+    if (!tourId) {
+      throw new Error('Tour ID not found')
+    }
+    void bookTour(tourId)
   })
 }

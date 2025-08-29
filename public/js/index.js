@@ -165,6 +165,7 @@ var _login = require("./login");
 var _mapBox = require("./mapBox");
 var _alerts = require("./alerts");
 var _updateSettings = require("./updateSettings");
+var _stripe = require("./stripe");
 const successMessage = sessionStorage.getItem('updateSuccess');
 if (successMessage) {
     (0, _alerts.showAlert)('success', successMessage);
@@ -175,6 +176,7 @@ const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
+const bookBtn = document.getElementById('book-tour');
 if (mapBox) {
     const locationsData = mapBox.dataset.locations;
     if (locationsData) {
@@ -231,8 +233,15 @@ if (userPasswordForm) userPasswordForm.addEventListener('submit', (e)=>{
         } else (0, _alerts.showAlert)('error', 'Please provide correct data');
     })();
 });
+if (bookBtn) bookBtn.addEventListener('click', (e)=>{
+    const target = e.target;
+    target.textContent = 'Processing...';
+    const tourId = target.dataset.tourId;
+    if (!tourId) throw new Error('Tour ID not found');
+    (0, _stripe.bookTour)(tourId);
+});
 
-},{"./login":"5d8yi","./mapBox":"2MBxo","./alerts":"8ESFe","./updateSettings":"hUuk3"}],"5d8yi":[function(require,module,exports,__globalThis) {
+},{"./login":"5d8yi","./mapBox":"2MBxo","./alerts":"8ESFe","./updateSettings":"hUuk3","./stripe":"gEafq"}],"5d8yi":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "login", ()=>login);
@@ -5194,5 +5203,188 @@ const updateSettings = async ({ data, type })=>{
     }
 };
 
-},{"axios":"gIwns","./alerts":"8ESFe","@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}]},["2V405"], "2V405", "parcelRequire11c7", {})
+},{"axios":"gIwns","./alerts":"8ESFe","@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}],"gEafq":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "bookTour", ()=>bookTour);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+var _stripeJs = require("@stripe/stripe-js");
+const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
+const bookTour = async (tourId)=>{
+    try {
+        // 1) Initialize Stripe
+        const loadStripeFn = (0, _stripeJs.loadStripe);
+        const stripe = await loadStripeFn('pk_test_51Rxp1oAcnCNcHnCJGU4sKlTWxbdTkI3JI1jeApqiHkiuLRIUB831Ki0es9yzxxO3OA0Mj74OcyAj6LnfDBCyboon00RPNb8vFR');
+        if (!stripe) {
+            (0, _alerts.showAlert)('error', 'Payment system unavailable. Please try again later.');
+            return;
+        }
+        const hasRedirect = (obj)=>!!obj && typeof obj.redirectToCheckout === 'function';
+        if (!hasRedirect(stripe)) {
+            (0, _alerts.showAlert)('error', 'Payment system unavailable. Please try again later.');
+            return;
+        }
+        const stripeInstance = stripe;
+        // 2) Get checkout session from API
+        const session = await (0, _axiosDefault.default).get(`${PROJECT_URL}/api/v1/bookings/checkout-session/${tourId}`);
+        console.log('session: ', session);
+        // 3) Automatically create checkout form + charge credit card
+        await stripeInstance.redirectToCheckout({
+            sessionId: session.data.session.id
+        });
+    } catch (err) {
+        console.error(err);
+        let message = 'Something went wrong while starting checkout.';
+        if ((0, _axios.isAxiosError)(err)) message = err.response?.data?.message ?? err.message;
+        else if (err instanceof Error) message = err.message;
+        (0, _alerts.showAlert)('error', message);
+    }
+};
+
+},{"axios":"gIwns","./alerts":"8ESFe","@stripe/stripe-js":"2fgzD","@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}],"2fgzD":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _indexMjs = require("../dist/index.mjs");
+parcelHelpers.exportAll(_indexMjs, exports);
+
+},{"../dist/index.mjs":"eNPCZ","@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}],"eNPCZ":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "loadStripe", ()=>loadStripe);
+var RELEASE_TRAIN = 'basil';
+var runtimeVersionToUrlVersion = function runtimeVersionToUrlVersion(version) {
+    return version === 3 ? 'v3' : version;
+};
+var ORIGIN = 'https://js.stripe.com';
+var STRIPE_JS_URL = "".concat(ORIGIN, "/").concat(RELEASE_TRAIN, "/stripe.js");
+var V3_URL_REGEX = /^https:\/\/js\.stripe\.com\/v3\/?(\?.*)?$/;
+var STRIPE_JS_URL_REGEX = /^https:\/\/js\.stripe\.com\/(v3|[a-z]+)\/stripe\.js(\?.*)?$/;
+var EXISTING_SCRIPT_MESSAGE = 'loadStripe.setLoadParameters was called but an existing Stripe.js script already exists in the document; existing script parameters will be used';
+var isStripeJSURL = function isStripeJSURL(url) {
+    return V3_URL_REGEX.test(url) || STRIPE_JS_URL_REGEX.test(url);
+};
+var findScript = function findScript() {
+    var scripts = document.querySelectorAll("script[src^=\"".concat(ORIGIN, "\"]"));
+    for(var i = 0; i < scripts.length; i++){
+        var script = scripts[i];
+        if (!isStripeJSURL(script.src)) continue;
+        return script;
+    }
+    return null;
+};
+var injectScript = function injectScript(params) {
+    var queryString = params && !params.advancedFraudSignals ? '?advancedFraudSignals=false' : '';
+    var script = document.createElement('script');
+    script.src = "".concat(STRIPE_JS_URL).concat(queryString);
+    var headOrBody = document.head || document.body;
+    if (!headOrBody) throw new Error('Expected document.body not to be null. Stripe.js requires a <body> element.');
+    headOrBody.appendChild(script);
+    return script;
+};
+var registerWrapper = function registerWrapper(stripe, startTime) {
+    if (!stripe || !stripe._registerWrapper) return;
+    stripe._registerWrapper({
+        name: 'stripe-js',
+        version: "7.9.0",
+        startTime: startTime
+    });
+};
+var stripePromise$1 = null;
+var onErrorListener = null;
+var onLoadListener = null;
+var onError = function onError(reject) {
+    return function(cause) {
+        reject(new Error('Failed to load Stripe.js', {
+            cause: cause
+        }));
+    };
+};
+var onLoad = function onLoad(resolve, reject) {
+    return function() {
+        if (window.Stripe) resolve(window.Stripe);
+        else reject(new Error('Stripe.js not available'));
+    };
+};
+var loadScript = function loadScript(params) {
+    // Ensure that we only attempt to load Stripe.js at most once
+    if (stripePromise$1 !== null) return stripePromise$1;
+    stripePromise$1 = new Promise(function(resolve, reject) {
+        if (typeof window === 'undefined' || typeof document === 'undefined') {
+            // Resolve to null when imported server side. This makes the module
+            // safe to import in an isomorphic code base.
+            resolve(null);
+            return;
+        }
+        if (window.Stripe && params) console.warn(EXISTING_SCRIPT_MESSAGE);
+        if (window.Stripe) {
+            resolve(window.Stripe);
+            return;
+        }
+        try {
+            var script = findScript();
+            if (script && params) console.warn(EXISTING_SCRIPT_MESSAGE);
+            else if (!script) script = injectScript(params);
+            else if (script && onLoadListener !== null && onErrorListener !== null) {
+                var _script$parentNode;
+                // remove event listeners
+                script.removeEventListener('load', onLoadListener);
+                script.removeEventListener('error', onErrorListener); // if script exists, but we are reloading due to an error,
+                // reload script to trigger 'load' event
+                (_script$parentNode = script.parentNode) === null || _script$parentNode === void 0 || _script$parentNode.removeChild(script);
+                script = injectScript(params);
+            }
+            onLoadListener = onLoad(resolve, reject);
+            onErrorListener = onError(reject);
+            script.addEventListener('load', onLoadListener);
+            script.addEventListener('error', onErrorListener);
+        } catch (error) {
+            reject(error);
+            return;
+        }
+    }); // Resets stripePromise on error
+    return stripePromise$1["catch"](function(error) {
+        stripePromise$1 = null;
+        return Promise.reject(error);
+    });
+};
+var initStripe = function initStripe(maybeStripe, args, startTime) {
+    if (maybeStripe === null) return null;
+    var pk = args[0];
+    var isTestKey = pk.match(/^pk_test/); // @ts-expect-error this is not publicly typed
+    var version = runtimeVersionToUrlVersion(maybeStripe.version);
+    var expectedVersion = RELEASE_TRAIN;
+    if (isTestKey && version !== expectedVersion) console.warn("Stripe.js@".concat(version, " was loaded on the page, but @stripe/stripe-js@").concat("7.9.0", " expected Stripe.js@").concat(expectedVersion, ". This may result in unexpected behavior. For more information, see https://docs.stripe.com/sdks/stripejs-versioning"));
+    var stripe = maybeStripe.apply(undefined, args);
+    registerWrapper(stripe, startTime);
+    return stripe;
+}; // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+var stripePromise;
+var loadCalled = false;
+var getStripePromise = function getStripePromise() {
+    if (stripePromise) return stripePromise;
+    stripePromise = loadScript(null)["catch"](function(error) {
+        // clear cache on error
+        stripePromise = null;
+        return Promise.reject(error);
+    });
+    return stripePromise;
+}; // Execute our own script injection after a tick to give users time to do their
+// own script injection.
+Promise.resolve().then(function() {
+    return getStripePromise();
+})["catch"](function(error) {
+    if (!loadCalled) console.warn(error);
+});
+var loadStripe = function loadStripe() {
+    for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++)args[_key] = arguments[_key];
+    loadCalled = true;
+    var startTime = Date.now(); // if previous attempts are unsuccessful, will re-load script
+    return getStripePromise().then(function(maybeStripe) {
+        return initStripe(maybeStripe, args, startTime);
+    });
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"j7FRh"}]},["2V405"], "2V405", "parcelRequire11c7", {})
 
