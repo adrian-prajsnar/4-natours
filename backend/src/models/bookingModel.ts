@@ -44,4 +44,4 @@ bookingSchema.pre(/^find/, function (this: Query<IBooking, IBooking>, next) {
   next()
 })
 
-export const Bookings = model<IBooking>('Booking', bookingSchema)
+export const Booking = model<IBooking>('Booking', bookingSchema)

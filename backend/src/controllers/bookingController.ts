@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
+import { Booking } from '../models/bookingModel'
 import { getEnv } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
 
@@ -8,6 +9,7 @@ const stripe = new Stripe(getEnv('STRIPE_SECRET_KEY'))
 
 interface GetCheckoutSessionReq extends Request {
   user?: {
+    id: string
     email: string
   }
 }
@@ -45,7 +47,7 @@ export const getCheckoutSession = catchAsync(
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      success_url: `${req.protocol}://${host}`,
+      success_url: `${req.protocol}://${host}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price.toString()}`,
       cancel_url: `${req.protocol}://${host}/tour/${tourSlug}`,
       customer_email: req.user.email,
       client_reference_id: req.params.tourId,
@@ -70,5 +72,19 @@ export const getCheckoutSession = catchAsync(
       status: 'success',
       session,
     })
+  }
+)
+
+export const createBookingCheckout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // This is only TEMPORARY, because it's UNSECURE: everyone can make bookings without paying
+    const { tour, user, price } = req.query
+    if (!tour && !user && !price) {
+      next()
+      return
+    }
+
+    await Booking.create({ tour, user, price })
+    res.redirect(req.originalUrl.split('?')[0])
   }
 )
