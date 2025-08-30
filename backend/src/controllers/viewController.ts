@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
 import { IUser, User } from '../models/userModel'
+import { Booking } from '../models/bookingModel'
 import { UserRole } from '../utils/enums'
 import { PROJECT_URL } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
@@ -45,6 +46,32 @@ export const getAccount = (req: Request, res: Response) => {
     PROJECT_URL,
   })
 }
+
+interface GetMyToursReq extends Request {
+  user?: {
+    _id: string
+  }
+}
+
+export const getMyTours = catchAsync(
+  async (req: GetMyToursReq, res: Response) => {
+    // 1) Find all bookings
+    if (!req.user) throw new Error('Unexpected error: there is no user.')
+    const bookings = await Booking.find({
+      user: req.user._id,
+    })
+
+    // 2) Find yours with the returned IDs
+    const tourIds = bookings.map(el => el.tour)
+    const tours = await Tour.find({
+      _id: { $in: tourIds },
+    })
+
+    res
+      .status(200)
+      .render('overview', { title: 'My Tours', tours, PROJECT_URL })
+  }
+)
 
 interface UpdateUserDataRequest extends Request {
   user?: IUser

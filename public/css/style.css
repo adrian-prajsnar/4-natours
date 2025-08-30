@@ -1079,6 +1079,21 @@ body {
   grid-gap: 7rem;
 }
 
+.message-container {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 5rem;
+  background-color: #fff;
+  border-radius: 3px;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.1);
+}
+
+.message-text {
+  font-size: 1.8rem;
+  color: #777;
+  margin-top: 1rem;
+}
+
 .card {
   border-radius: 3px;
   overflow: hidden;

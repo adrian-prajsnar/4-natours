@@ -4,6 +4,7 @@ import { createBookingCheckout } from '../controllers/bookingController'
 import {
   getAccount,
   getLoginForm,
+  getMyTours,
   getOverview,
   getTour,
   updateUserData,
@@ -15,6 +16,7 @@ viewsRouter.get('/', createBookingCheckout, isLoggedIn, getOverview)
 viewsRouter.get('/tours/:slug', isLoggedIn, getTour)
 viewsRouter.get('/login', isLoggedIn, getLoginForm)
 viewsRouter.get('/me', protect, getAccount)
+viewsRouter.get('/my-tours', protect, getMyTours)
 viewsRouter.post('/submit-user-data', protect, updateUserData)
 
 export default viewsRouter
