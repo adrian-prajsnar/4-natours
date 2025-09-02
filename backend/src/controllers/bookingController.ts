@@ -4,6 +4,13 @@ import { Tour } from '../models/tourModel'
 import { Booking } from '../models/bookingModel'
 import { getEnv } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
+import {
+  createOne,
+  deleteOne,
+  getAll,
+  getOne,
+  updateOne,
+} from './handlerFactory'
 
 const stripe = new Stripe(getEnv('STRIPE_SECRET_KEY'))
 
@@ -88,3 +95,9 @@ export const createBookingCheckout = catchAsync(
     res.redirect(req.originalUrl.split('?')[0])
   }
 )
+
+export const getAllBookings = getAll(Booking)
+export const getBooking = getOne(Booking)
+export const createBooking = createOne(Booking)
+export const updateBooking = updateOne(Booking)
+export const deleteBooking = deleteOne(Booking)
