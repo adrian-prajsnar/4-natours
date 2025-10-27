@@ -1,3 +1,7 @@
+# Natours Application
+
+Built using moderm technologies: node.js, express, monogoDB, mongoose, typescript.
+
 When working on this project you must add to .env.local following fields:
 
 ```
