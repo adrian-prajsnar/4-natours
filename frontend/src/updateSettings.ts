@@ -3,8 +3,6 @@ import { ErrorResponseData } from './login'
 import { showAlert } from './alerts'
 import { UserResponse } from './types'
 
-const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-'
-
 interface UpdateSettingsArg {
   data:
     | FormData
@@ -22,7 +20,7 @@ export const updateSettings = async ({ data, type }: UpdateSettingsArg) => {
   try {
     const res = await axios<UserResponse>({
       method: 'PATCH',
-      url: `${PROJECT_URL}/api/v1/users/update${type === 'password' ? 'MyPassword' : 'Me'}`,
+      url: `/api/v1/users/update${type === 'password' ? 'MyPassword' : 'Me'}`,
       data,
     })
 

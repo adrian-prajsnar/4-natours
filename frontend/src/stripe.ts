@@ -2,8 +2,6 @@ import axios, { isAxiosError } from 'axios'
 import { showAlert } from './alerts'
 import { loadStripe } from '@stripe/stripe-js'
 
-const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-'
-
 interface CheckoutSessionResponse {
   session: { id: string }
 }
@@ -44,9 +42,8 @@ export const bookTour = async (tourId: string): Promise<void> => {
 
     // 2) Get checkout session from API
     const session = await axios.get<CheckoutSessionResponse>(
-      `${PROJECT_URL}/api/v1/bookings/checkout-session/${tourId}`
+      `/api/v1/bookings/checkout-session/${tourId}`
     )
-    console.log('session: ', session)
 
     // 3) Automatically create checkout form + charge credit card
     await stripeInstance.redirectToCheckout({

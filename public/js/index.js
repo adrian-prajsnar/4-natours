@@ -249,12 +249,11 @@ parcelHelpers.export(exports, "logout", ()=>logout);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alertsJs = require("./alerts.js");
-const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
 const login = async (email, password)=>{
     try {
         const res = await (0, _axiosDefault.default)({
             method: 'POST',
-            url: `${PROJECT_URL}/api/v1/users/login`,
+            url: '/api/v1/users/login',
             data: {
                 email,
                 password
@@ -278,7 +277,7 @@ const logout = async ()=>{
     try {
         const res = await (0, _axiosDefault.default)({
             method: 'GET',
-            url: `${PROJECT_URL}/api/v1/users/logout`
+            url: '/api/v1/users/logout'
         });
         if (res.data.status === 'success') {
             location.href = '/';
@@ -5182,12 +5181,11 @@ parcelHelpers.export(exports, "updateSettings", ()=>updateSettings);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
 const updateSettings = async ({ data, type })=>{
     try {
         const res = await (0, _axiosDefault.default)({
             method: 'PATCH',
-            url: `${PROJECT_URL}/api/v1/users/update${type === 'password' ? 'MyPassword' : 'Me'}`,
+            url: `/api/v1/users/update${type === 'password' ? 'MyPassword' : 'Me'}`,
             data
         });
         if (res.data.status === 'success') {
@@ -5211,7 +5209,6 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 var _stripeJs = require("@stripe/stripe-js");
-const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-';
 const bookTour = async (tourId)=>{
     try {
         // 1) Initialize Stripe
@@ -5228,8 +5225,7 @@ const bookTour = async (tourId)=>{
         }
         const stripeInstance = stripe;
         // 2) Get checkout session from API
-        const session = await (0, _axiosDefault.default).get(`${PROJECT_URL}/api/v1/bookings/checkout-session/${tourId}`);
-        console.log('session: ', session);
+        const session = await (0, _axiosDefault.default).get(`/api/v1/bookings/checkout-session/${tourId}`);
         // 3) Automatically create checkout form + charge credit card
         await stripeInstance.redirectToCheckout({
             sessionId: session.data.session.id

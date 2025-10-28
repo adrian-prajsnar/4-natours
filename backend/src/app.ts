@@ -7,6 +7,7 @@ import mongoSanitize from 'express-mongo-sanitize'
 import sanitizeHtml from 'sanitize-html'
 import hpp from 'hpp'
 import cookieParser from 'cookie-parser'
+import compression from 'compression'
 import AppError from './utils/appError'
 import viewsRouter from './routes/viewRoutes'
 import toursRouter from './routes/tourRoutes'
@@ -161,6 +162,8 @@ app.use(
     ],
   })
 )
+
+app.use(compression())
 
 // Test middleware
 app.use((req: Request, _res: Response, next: NextFunction) => {

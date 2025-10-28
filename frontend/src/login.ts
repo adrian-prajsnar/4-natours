@@ -6,13 +6,11 @@ export interface ErrorResponseData {
   message: string
 }
 
-const PROJECT_URL = document.querySelector('main')?.dataset.projectUrl ?? '-'
-
 export const login = async (email: string, password: string): Promise<void> => {
   try {
     const res = await axios<UserResponse>({
       method: 'POST',
-      url: `${PROJECT_URL}/api/v1/users/login`,
+      url: '/api/v1/users/login',
       data: {
         email,
         password,
@@ -41,7 +39,7 @@ export const logout = async () => {
   try {
     const res = await axios<LogoutResponse>({
       method: 'GET',
-      url: `${PROJECT_URL}/api/v1/users/logout`,
+      url: '/api/v1/users/logout',
     })
     if (res.data.status === 'success') {
       location.href = '/'

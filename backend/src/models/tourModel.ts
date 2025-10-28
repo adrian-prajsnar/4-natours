@@ -200,15 +200,15 @@ tourSchema.pre(
   }
 )
 
-tourSchema.post(
-  /^find/,
-  function (this: Query<unknown, unknown> & { start: number }, docs, next) {
-    console.log(
-      `Query took ${(Date.now() - this.start).toString()} milliseconds!`
-    )
-    next()
-  }
-)
+// tourSchema.post(
+//   /^find/,
+//   function (this: Query<unknown, unknown> & { start: number }, docs, next) {
+//     console.log(
+//       `Query took ${(Date.now() - this.start).toString()} milliseconds!`
+//     )
+//     next()
+//   }
+// )
 
 tourSchema.pre(/^find/, function (this: Query<ITour, ITour>, next) {
   this.populate({

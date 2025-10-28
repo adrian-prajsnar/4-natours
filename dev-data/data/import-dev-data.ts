@@ -1,9 +1,9 @@
 import fs from 'fs'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
-import { Tour } from '../../src/models/tourModel'
-import { User } from '../../src/models/userModel'
-import { Review } from '../../src/models/reviewModel'
+import { Tour } from '../../backend/src/models/tourModel'
+import { User } from '../../backend/src/models/userModel'
+import { Review } from '../../backend/src/models/reviewModel'
 
 dotenv.config({
   path: ['.env.local', '.env'],

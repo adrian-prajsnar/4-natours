@@ -3,13 +3,12 @@ import { Tour } from '../models/tourModel'
 import { IUser, User } from '../models/userModel'
 import { Booking } from '../models/bookingModel'
 import { UserRole } from '../utils/enums'
-import { PROJECT_URL } from '../utils/helpers'
 import catchAsync from '../utils/catchAsync'
 import AppError from '../utils/appError'
 
 export const getOverview = catchAsync(async (_req: Request, res: Response) => {
   const tours = await Tour.find()
-  res.status(200).render('overview', { title: 'All Tours', tours, PROJECT_URL })
+  res.status(200).render('overview', { title: 'All Tours', tours })
 })
 
 export const getTour = catchAsync(
@@ -27,23 +26,19 @@ export const getTour = catchAsync(
       return
     }
 
-    res
-      .status(200)
-      .render('tour', { title: `${tour.name} Tour`, tour, roles, PROJECT_URL })
+    res.status(200).render('tour', { title: `${tour.name} Tour`, tour, roles })
   }
 )
 
 export const getLoginForm = (_req: Request, res: Response) => {
   res.status(200).render('login', {
     title: 'Log into your account',
-    PROJECT_URL,
   })
 }
 
 export const getAccount = (req: Request, res: Response) => {
   res.status(200).render('account', {
     title: 'Your account',
-    PROJECT_URL,
   })
 }
 
@@ -67,9 +62,7 @@ export const getMyTours = catchAsync(
       _id: { $in: tourIds },
     })
 
-    res
-      .status(200)
-      .render('overview', { title: 'My Tours', tours, PROJECT_URL })
+    res.status(200).render('overview', { title: 'My Tours', tours })
   }
 )
 
@@ -96,7 +89,6 @@ export const updateUserData = catchAsync(
     res.status(200).render('account', {
       title: 'Your account',
       user: updatedUser,
-      PROJECT_URL,
     })
   }
 )

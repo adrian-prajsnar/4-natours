@@ -1,6 +1,6 @@
 process.on('uncaughtException', (err: Error) => {
   console.error('UNHANDLED EXCEPTION! ❌ Shutting down...')
-  console.log(err)
+  console.error(err)
   process.exit(1)
 })
 
