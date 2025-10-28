@@ -10,7 +10,7 @@
     "start:dev": "nodemon",
     "start:prod": "cross-env NODE_ENV=production nodemon",
     "build:backend": "tsc",
-    "build:frontend": "parcel build ./frontend/src/index.ts --dist-dir ./public/js --no-source-maps",
+    "build:frontend": "parcel build ./frontend/src/index.ts --dist-dir ./public/js --no-source-maps --no-cache",
     "watch:frontend": "parcel watch ./frontend/src/index.ts --dist-dir ./public/js --no-hmr --no-source-maps",
     "dev": "npm-run-all --parallel start:dev watch:frontend",
     "build": "npm-run-all build:backend build:frontend",
