@@ -6,10 +6,11 @@
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node dist/server.js",
+    "start": "node dist/backend/src/server.js",
     "start:dev": "nodemon",
     "start:prod": "cross-env NODE_ENV=production nodemon",
-    "build:backend": "tsc",
+    "build:backend": "tsc && npm run copy:views",
+    "copy:views": "node -e \"require('fs').cpSync('backend/src/views', 'dist/backend/src/views', {recursive: true})\"",
     "build:frontend": "parcel build ./frontend/src/index.ts --dist-dir ./public/js --no-source-maps --no-cache",
     "watch:frontend": "parcel watch ./frontend/src/index.ts --dist-dir ./public/js --no-hmr --no-source-maps",
     "dev": "npm-run-all --parallel start:dev watch:frontend",

@@ -24,13 +24,18 @@ declare module 'express-serve-static-core' {
 
 export const app: Express = express()
 
+const isProduction = __dirname.includes('dist')
+const publicPath = isProduction
+  ? path.join(__dirname, '..', '..', '..', 'public')
+  : path.join(__dirname, '..', '..', 'public')
+
 app.set('view engine', 'pug')
 app.set('views', path.join(__dirname, 'views'))
 
 // 1) GLOBAL MIDDLEWARES
 // Serving static files
 app.use(
-  express.static(path.join(__dirname, '..', '..', 'public'), {
+  express.static(publicPath, {
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.js')) {
         res.setHeader('Content-Type', 'application/javascript; charset=UTF-8')
