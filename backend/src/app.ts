@@ -7,6 +7,7 @@ import mongoSanitize from 'express-mongo-sanitize'
 import sanitizeHtml from 'sanitize-html'
 import hpp from 'hpp'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import compression from 'compression'
 import AppError from './utils/appError'
 import viewsRouter from './routes/viewRoutes'
@@ -35,6 +36,10 @@ app.set('view engine', 'pug')
 app.set('views', path.join(__dirname, 'views'))
 
 // 1) GLOBAL MIDDLEWARES
+// Implement CORS for all routes
+app.use(cors())
+app.options('*', cors())
+
 // Serving static files
 app.use(
   express.static(publicPath, {
