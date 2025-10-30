@@ -14,13 +14,19 @@ const signToken = (id: string) => {
   } as SignOptions)
 }
 
-const createSendToken = (user: IUser, statusCode: number, res: Response) => {
+const createSendToken = (
+  user: IUser,
+  statusCode: number,
+  req: Request,
+  res: Response
+) => {
   const token = signToken(user._id)
   const cookieOptions = {
     expires: new Date(
       Date.now() + Number(getEnv('JWT_COOKIE_EXPIRES_IN')) * 24 * 60 * 60 * 1000
     ),
-    secure: getEnv('NODE_ENV') === 'production',
+    // secure: getEnv('NODE_ENV') === 'production',
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
     httpOnly: true,
   }
   user.password = undefined as unknown as string
@@ -56,7 +62,7 @@ export const signUp = catchAsync(
     })
     const url = `${req.protocol}://${req.get('host') ?? '-'}/me`
     await new Email(newUser, url).sendWelcome()
-    createSendToken(newUser, 201, res)
+    createSendToken(newUser, 201, req, res)
   }
 )
 
@@ -85,7 +91,7 @@ export const login = catchAsync(
       return
     }
 
-    createSendToken(user, 200, res)
+    createSendToken(user, 200, req, res)
   }
 )
 
@@ -282,7 +288,7 @@ export const resetPassword = catchAsync(
     user.passwordResetExpires = undefined
     await user.save()
 
-    createSendToken(user, 200, res)
+    createSendToken(user, 200, req, res)
   }
 )
 
@@ -333,6 +339,6 @@ export const updatePassword = catchAsync(
     user.passwordConfirm = req.body.newPasswordConfirm
     await user.save()
 
-    createSendToken(user, 200, res)
+    createSendToken(user, 200, req, res)
   }
 )

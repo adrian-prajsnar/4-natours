@@ -24,6 +24,8 @@ declare module 'express-serve-static-core' {
 
 export const app: Express = express()
 
+app.enable('trust proxy')
+
 const isProduction = __dirname.includes('dist')
 const publicPath = isProduction
   ? path.join(__dirname, '..', '..', '..', 'public')
