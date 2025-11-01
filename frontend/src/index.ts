@@ -123,9 +123,6 @@ if (bookBtn) {
 }
 
 const alertMessage = document.querySelector('body')?.dataset.alert
-console.log('Alert message from dataset:', alertMessage)
-console.log('Body element:', document.querySelector('body'))
-console.log('Body dataset:', document.querySelector('body')?.dataset)
 if (alertMessage) {
   showAlert('success', alertMessage, 20)
 }

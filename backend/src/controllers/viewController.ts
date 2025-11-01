@@ -11,7 +11,6 @@ export const getOverview = catchAsync(async (_req: Request, res: Response) => {
   res.status(200).render('overview', {
     title: 'All Tours',
     tours,
-    alert: res.locals.alert as string | undefined,
   })
 })
 
@@ -34,7 +33,6 @@ export const getTour = catchAsync(
       title: `${tour.name} Tour`,
       tour,
       roles,
-      alert: res.locals.alert as string | undefined,
     })
   }
 )
@@ -42,14 +40,12 @@ export const getTour = catchAsync(
 export const getLoginForm = (_req: Request, res: Response) => {
   res.status(200).render('login', {
     title: 'Log into your account',
-    alert: res.locals.alert as string | undefined,
   })
 }
 
 export const getAccount = (req: Request, res: Response) => {
   res.status(200).render('account', {
     title: 'Your account',
-    alert: res.locals.alert as string | undefined,
   })
 }
 
@@ -73,16 +69,9 @@ export const getMyTours = catchAsync(
       _id: { $in: tourIds },
     })
 
-    const alertValue = res.locals.alert as string | undefined
-    console.log(
-      'getMyTours - alert value being passed to template:',
-      alertValue
-    )
-
     res.status(200).render('overview', {
       title: 'My Tours',
       tours,
-      alert: alertValue,
     })
   }
 )
@@ -110,18 +99,15 @@ export const updateUserData = catchAsync(
     res.status(200).render('account', {
       title: 'Your account',
       user: updatedUser,
-      alert: res.locals.alert as string | undefined,
     })
   }
 )
 
 export const alerts = (req: Request, res: Response, next: NextFunction) => {
   const { alert } = req.query
-  console.log('Alerts middleware - query param:', alert)
   if (alert === 'booking') {
     res.locals.alert =
       "Your booking was successful! Please check your email for a confirmation. If your booking doesn't show up here immediately, please come back later."
-    console.log('Alert set in res.locals:', res.locals.alert)
   }
   next()
 }
