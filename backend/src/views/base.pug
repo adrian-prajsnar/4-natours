@@ -15,7 +15,7 @@ html
         src='https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js'
       )
       title Natours | #{ title }
-  body(data-alert=`${alert ?  alert : ''}`)
+  body(data-alert=alert || '')
     include _header
     main.main
       block content
