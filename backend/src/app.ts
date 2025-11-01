@@ -16,6 +16,7 @@ import usersRouter from './routes/userRoutes'
 import reviewsRouter from './routes/reviewRoutes'
 import bookingsRouter from './routes/bookingRoutes'
 import globalErrorHandler from './controllers/errorController'
+import { webhookCheckout } from './controllers/bookingController'
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -107,6 +108,14 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again in an hour!',
 })
 app.use('/api', limiter)
+
+app.post(
+  '/webhook-checkout',
+  express.raw({
+    type: 'application/json',
+  }),
+  webhookCheckout
+)
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }))

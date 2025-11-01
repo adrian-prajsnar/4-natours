@@ -1,6 +1,6 @@
 import express from 'express'
 import { isLoggedIn, protect } from '../controllers/authController'
-import { createBookingCheckout } from '../controllers/bookingController'
+// import { createBookingCheckout } from '../controllers/bookingController'
 import {
   getAccount,
   getLoginForm,
@@ -12,11 +12,16 @@ import {
 
 const viewsRouter = express.Router()
 
-viewsRouter.get('/', createBookingCheckout, isLoggedIn, getOverview)
+viewsRouter.get('/', isLoggedIn, getOverview)
 viewsRouter.get('/tours/:slug', isLoggedIn, getTour)
 viewsRouter.get('/login', isLoggedIn, getLoginForm)
 viewsRouter.get('/me', protect, getAccount)
-viewsRouter.get('/my-tours', protect, getMyTours)
+viewsRouter.get(
+  '/my-tours',
+  // createBookingCheckout,
+  protect,
+  getMyTours
+)
 viewsRouter.post('/submit-user-data', protect, updateUserData)
 
 export default viewsRouter

@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { Tour } from '../models/tourModel'
 import { Booking } from '../models/bookingModel'
 import { getEnv } from '../utils/helpers'
@@ -11,6 +11,7 @@ import {
   getOne,
   updateOne,
 } from './handlerFactory'
+import { User } from '../models/userModel'
 
 const stripe = new Stripe(getEnv('STRIPE_SECRET_KEY'))
 
@@ -54,7 +55,8 @@ export const getCheckoutSession = catchAsync(
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      success_url: `${req.protocol}://${host}/?tours=${req.params.tourId}&user=${req.user.id}&price=${tour.price.toString()}`,
+      // success_url: `${req.protocol}://${host}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price.toString()}`,
+      success_url: `${req.protocol}://${host}/my-tours`,
       cancel_url: `${req.protocol}://${host}/tours/${tourSlug}`,
       customer_email: req.user.email,
       client_reference_id: req.params.tourId,
@@ -82,19 +84,53 @@ export const getCheckoutSession = catchAsync(
   }
 )
 
-export const createBookingCheckout = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    // This is only TEMPORARY, because it's UNSECURE: everyone can make bookings without paying
-    const { tour, user, price } = req.query
-    if (!tour && !user && !price) {
-      next()
+// export const createBookingCheckout = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     // This is only TEMPORARY, because it's UNSECURE: everyone can make bookings without paying
+//     const { tour, user, price } = req.query
+//     if (!tour && !user && !price) {
+//       next()
+//       return
+//     }
+
+//     await Booking.create({ tour, user, price })
+//     res.redirect(req.originalUrl.split('?')[0])
+//   }
+// )
+
+const createBookingCheckout = async (session: Stripe.Checkout.Session) => {
+  const tour = session.client_reference_id
+  const user = (await User.findOne({ email: session.customer_email }))
+    ?.id as string
+  const price = session.amount_total ? session.amount_total / 100 : 0
+  await Booking.create({ tour, user, price })
+}
+
+export const webhookCheckout = (req: Request, res: Response) => {
+  const signature = req.headers['strict-signature'] as string
+  let event
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body as string,
+      signature,
+      getEnv('STRIPE_WEBHOOK_SECRET')
+    )
+  } catch (err) {
+    if (err instanceof Error) {
+      res.status(400).send(`Webhook error: ${err.message}`)
       return
     }
-
-    await Booking.create({ tour, user, price })
-    res.redirect(req.originalUrl.split('?')[0])
+    res.status(400).send('Webhook error: Unknown error')
+    return
   }
-)
+
+  if (event.type === 'checkout.session.completed') {
+    void createBookingCheckout(event.data.object)
+  }
+
+  res.status(200).json({ received: true })
+}
 
 export const getAllBookings = getAll(Booking)
 export const getBooking = getOne(Booking)
