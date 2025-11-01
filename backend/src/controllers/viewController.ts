@@ -8,7 +8,11 @@ import AppError from '../utils/appError'
 
 export const getOverview = catchAsync(async (_req: Request, res: Response) => {
   const tours = await Tour.find()
-  res.status(200).render('overview', { title: 'All Tours', tours })
+  res.status(200).render('overview', {
+    title: 'All Tours',
+    tours,
+    alert: res.locals.alert as string | undefined,
+  })
 })
 
 export const getTour = catchAsync(
@@ -26,19 +30,26 @@ export const getTour = catchAsync(
       return
     }
 
-    res.status(200).render('tour', { title: `${tour.name} Tour`, tour, roles })
+    res.status(200).render('tour', {
+      title: `${tour.name} Tour`,
+      tour,
+      roles,
+      alert: res.locals.alert as string | undefined,
+    })
   }
 )
 
 export const getLoginForm = (_req: Request, res: Response) => {
   res.status(200).render('login', {
     title: 'Log into your account',
+    alert: res.locals.alert as string | undefined,
   })
 }
 
 export const getAccount = (req: Request, res: Response) => {
   res.status(200).render('account', {
     title: 'Your account',
+    alert: res.locals.alert as string | undefined,
   })
 }
 
@@ -62,7 +73,11 @@ export const getMyTours = catchAsync(
       _id: { $in: tourIds },
     })
 
-    res.status(200).render('overview', { title: 'My Tours', tours })
+    res.status(200).render('overview', {
+      title: 'My Tours',
+      tours,
+      alert: res.locals.alert as string | undefined,
+    })
   }
 )
 
@@ -89,6 +104,7 @@ export const updateUserData = catchAsync(
     res.status(200).render('account', {
       title: 'Your account',
       user: updatedUser,
+      alert: res.locals.alert as string | undefined,
     })
   }
 )
