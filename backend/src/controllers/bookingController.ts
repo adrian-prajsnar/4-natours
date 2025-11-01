@@ -56,7 +56,7 @@ export const getCheckoutSession = catchAsync(
       mode: 'payment',
       payment_method_types: ['card'],
       // success_url: `${req.protocol}://${host}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price.toString()}`,
-      success_url: `${req.protocol}://${host}/my-tours`,
+      success_url: `${req.protocol}://${host}/my-tours?alert=booking`,
       cancel_url: `${req.protocol}://${host}/tours/${tourSlug}`,
       customer_email: req.user.email,
       client_reference_id: req.params.tourId,
@@ -68,7 +68,9 @@ export const getCheckoutSession = catchAsync(
             product_data: {
               name: `${tour.name} Tour`,
               description: tour.summary,
-              images: [`https://www.natours.dev/img/tours/${tour.imageCover}`], // temporarily
+              images: [
+                `${req.protocol}://${host}/img/tours/${tour.imageCover}`,
+              ],
             },
           },
           quantity: 1,

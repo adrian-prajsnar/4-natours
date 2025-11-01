@@ -92,3 +92,12 @@ export const updateUserData = catchAsync(
     })
   }
 )
+
+export const alerts = (req: Request, res: Response, next: NextFunction) => {
+  const { alert } = req.query
+  if (alert === 'booking') {
+    res.locals.alert =
+      "Your booking was successful! Please check your email for a confirmation. If your booking doesn't show up here immediately, please come back later."
+  }
+  next()
+}

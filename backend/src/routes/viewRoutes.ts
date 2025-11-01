@@ -2,6 +2,7 @@ import express from 'express'
 import { isLoggedIn, protect } from '../controllers/authController'
 // import { createBookingCheckout } from '../controllers/bookingController'
 import {
+  alerts,
   getAccount,
   getLoginForm,
   getMyTours,
@@ -11,6 +12,8 @@ import {
 } from '../controllers/viewController'
 
 const viewsRouter = express.Router()
+
+viewsRouter.use(alerts)
 
 viewsRouter.get('/', isLoggedIn, getOverview)
 viewsRouter.get('/tours/:slug', isLoggedIn, getTour)
